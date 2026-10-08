@@ -14,20 +14,21 @@ automaticamente no instante indicado (o início do arquivo = início da fala, se
 
 | Arquivo             | Texto                          | Entra em | Janela disponível | O que está na tela |
 |---------------------|--------------------------------|---------:|------------------:|--------------------|
-| `narracao-01.mp3`   | Tudo começa com uma ideia.     |  0,35 s  | até ~1,9 s        | digitação da frase |
-| `narracao-02.mp3`   | Transformada em experiência.   |  2,30 s  | até ~4,0 s        | blocos → site, DESIGN → CÓDIGO |
-| `narracao-03.mp3`   | Feita para cada tela.          |  4,45 s  | até ~5,8 s        | interação → smartphone |
-| `narracao-04.mp3`   | Sites, páginas e sistemas.     |  6,20 s  | até ~8,7 s        | SITES 6,24 · LANDING 7,20 · SISTEMAS 8,15 |
-| `narracao-05.mp3`   | Sua empresa merece presença.   |  9,65 s  | até ~11,7 s       | SUA EMPRESA. NO DIGITAL. |
-| `narracao-06.mp3`   | Vamos criar algo incrível?     | 12,75 s  | até ~14,4 s       | pergunta → assinatura |
+| `narracao-01.mp3`   | Tudo começa com uma ideia.     |  0,70 s  | até ~3,5 s        | digitação da frase |
+| `narracao-02.mp3`   | Transformada em experiência.   |  5,60 s  | até ~8,5 s        | blocos → site, DESIGN → CÓDIGO |
+| `narracao-03.mp3`   | Feita para cada tela.          | 12,15 s  | até ~13,9 s       | desktop → smartphone |
+| `narracao-04.mp3`   | Sites, páginas e sistemas.     | 14,80 s  | até ~20,4 s       | SITES 14,75 · LANDING 16,70 · SISTEMAS 18,65 |
+| `narracao-05.mp3`   | Sua empresa merece presença.   | 22,05 s  | até ~24,9 s       | SUA EMPRESA. NO DIGITAL. |
+| `narracao-06.mp3`   | Vamos criar algo incrível?     | 25,95 s  | até ~27,8 s       | pergunta → assinatura (27,9 s) |
 
-Na frase 4, fale com pausas: "Sites… páginas… e sistemas." — cada palavra cai na batida em que ela aparece.
+Na frase 4 há tempo de sobra: fale com calma, "Sites, páginas… e sistemas.", ou divida em três
+arquivos e acrescente as entradas em `js/config.js` (por exemplo 14,80 · 16,72 · 18,67 s).
 
 Os tempos ficam em `js/config.js` (`audio.narration.lines[].cue`) e podem ser ajustados em décimos de segundo.
 
 ### Opção B: um arquivo único
 
-Salve como `narracao.mp3` (15 s, alinhado ao t = 0, com as frases nos tempos da tabela acima).
+Salve como `narracao.mp3` (30 s, alinhado ao t = 0, com as frases nos tempos da tabela acima).
 Se esse arquivo existir, ele tem prioridade sobre os arquivos por frase.
 
 ### Direção de voz
@@ -40,7 +41,7 @@ e a última frase recebe um reverb curto.
 ## Trilha externa (opcional)
 
 Se existir `trilha.mp3`, ela substitui a trilha sintetizada (os efeitos sonoros continuam).
-Para manter a sincronia com os impactos, use 126 BPM com o "drop" em 9,10 s.
+Para manter a sincronia com os impactos, use 123 BPM com o "drop" em 20,60 s.
 
 ## Observação sobre `file://`
 

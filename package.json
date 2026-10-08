@@ -2,7 +2,7 @@
   "name": "showreel-digital-experience",
   "version": "1.0.0",
   "private": true,
-  "description": "Showreel de 15 s em HTML + GSAP para divulgar serviços de desenvolvimento web (sites, landing pages e sistemas).",
+  "description": "Showreel de 30 s em HTML + GSAP para divulgar serviços de desenvolvimento web (sites, landing pages e sistemas).",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",

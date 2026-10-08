@@ -122,7 +122,7 @@ try {
   // capa (frame da assinatura) para usar como thumbnail no Instagram/portfólio
   if (!args["no-poster"]) {
     const poster = out.replace(/\.mp4$/i, "") + "-capa.png";
-    await page.evaluate(() => window.SHOWREEL.seek(14.2));
+    await page.evaluate((t) => window.SHOWREEL.seek(t), duration - 1);
     await page.screenshot({ path: poster, type: "png" });
     console.log(`Capa   · ${path.relative(root, poster)}`);
   }

@@ -24,12 +24,12 @@ window.SHOWREEL_CONFIG = {
     narration: {
       single: "assets/audio/narracao.mp3",
       lines: [
-        { src: "assets/audio/narracao-01.mp3", cue: 0.35, text: "Tudo começa com uma ideia." },
-        { src: "assets/audio/narracao-02.mp3", cue: 2.30, text: "Transformada em experiência." },
-        { src: "assets/audio/narracao-03.mp3", cue: 4.45, text: "Feita para cada tela." },
-        { src: "assets/audio/narracao-04.mp3", cue: 6.20, text: "Sites, páginas e sistemas." },
-        { src: "assets/audio/narracao-05.mp3", cue: 9.65, text: "Sua empresa merece presença." },
-        { src: "assets/audio/narracao-06.mp3", cue: 12.75, text: "Vamos criar algo incrível?" }
+        { src: "assets/audio/narracao-01.mp3", cue: 0.70, text: "Tudo começa com uma ideia." },
+        { src: "assets/audio/narracao-02.mp3", cue: 5.60, text: "Transformada em experiência." },
+        { src: "assets/audio/narracao-03.mp3", cue: 12.15, text: "Feita para cada tela." },
+        { src: "assets/audio/narracao-04.mp3", cue: 14.80, text: "Sites, páginas e sistemas." },
+        { src: "assets/audio/narracao-05.mp3", cue: 22.05, text: "Sua empresa merece presença." },
+        { src: "assets/audio/narracao-06.mp3", cue: 25.95, text: "Vamos criar algo incrível?" }
       ],
       volume: 1.0,
       duckMusicDb: -5                        // abaixa a trilha enquanto a voz fala

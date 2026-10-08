@@ -415,7 +415,12 @@ window.ShowreelAudio = (function () {
   };
 
   E.room = function (t, dur) {
-    var c = this.ctx, n = this.noiseSrc(t, Math.min(dur, 2.3)), lp = this.filter("lowpass", 420, 0.5), g = c.createGain();
+    var c = this.ctx, lp = this.filter("lowpass", 420, 0.5), g = c.createGain();
+    var n = c.createBufferSource();
+    n.buffer = this.noise;
+    n.loop = true;
+    n.start(t);
+    n.stop(t + dur + 0.05);
     g.gain.setValueAtTime(0.0001, t);
     g.gain.exponentialRampToValueAtTime(0.012, t + 0.4);
     g.gain.setValueAtTime(0.012, t + dur - 0.4);
@@ -423,84 +428,96 @@ window.ShowreelAudio = (function () {
     n.connect(lp); lp.connect(g); g.connect(this.sfx);
   };
 
-  /* ---------- TRILHA (126 BPM, ancorada no "drop") ---------- */
+  /* ---------- TRILHA (123 BPM, ancorada no "drop") ---------- */
   E.scheduleMusic = function (t0, m) {
+    // m.beat = duração da batida; m.anchor = drop (s); demais campos em batidas relativas ao drop
     var beat = m.beat, b = function (k) { return t0 + m.anchor + k * beat; };
     var self = this;
     var Am9 = [45, 52, 55, 59, 60], Fmaj7 = [41, 48, 52, 57], Cmaj7 = [48, 52, 55, 59], G6 = [43, 50, 52, 59];
     var Am9hi = [57, 60, 64, 67, 71];
+    var G0 = m.grooveFrom, BRK = m.breakFrom, WRD = m.wordsFrom, OUT = m.outroAt, FIN = m.finalAt;
 
-    // pad de abertura (entra com a interface) e progressão
-    this.pad(t0 + m.intro, Am9, b(-6) - (t0 + m.intro), 0.05, 900);
-    this.pad(b(-6), Fmaj7, beat * 2, 0.055, 1100);
-    this.pad(b(-4), Cmaj7, beat * 2, 0.055, 1200);
-    this.pad(b(-2), G6, beat * 2, 0.05, 1300);
-    this.pad(b(0), Am9, beat * 2, 0.06, 1800);
-    this.pad(b(2), Fmaj7, beat * 2, 0.06, 1900);
-    this.pad(b(4), G6, beat * 2, 0.06, 2000);
-    this.pad(b(6), Am9, b(9) - b(6), 0.05, 1200);
-    this.pad(b(9), Am9hi, 1.4, 0.07, 1600);
-
-    // hats suaves na introdução (antes da batida)
-    for (var k = -16; k < -12; k += 0.5) if (b(k) > t0 + m.intro + 0.2) this.hat(b(k), 0.35, false);
-
-    var bassFor = function (k) {
-      if (k < -6) return 33;           // A
-      if (k < -4) return 29;           // F
-      if (k < -2) return 36;           // C
-      if (k < 0) return 31;            // G
-      if (k < 2) return 33;
-      if (k < 4) return 29;
-      return 31;
+    // harmonia: um acorde por compasso (4 batidas), trocando junto com as palavras
+    var chordAt = function (k) {
+      if (k < -20) return { pad: Am9, bass: 33 };
+      if (k < -16) return { pad: Fmaj7, bass: 29 };
+      if (k < -12) return { pad: G6, bass: 31 };
+      if (k < -8) return { pad: Fmaj7, bass: 29 };   // SITES
+      if (k < -4) return { pad: Cmaj7, bass: 36 };   // LANDING PAGES
+      if (k < 0) return { pad: G6, bass: 31 };       // SISTEMAS
+      if (k < 4) return { pad: Am9, bass: 33 };      // drop
+      if (k < 8) return { pad: Fmaj7, bass: 29 };
+      return { pad: G6, bass: 31 };
     };
 
-    for (k = -12; k < 6; k++) {
-      var t = b(k), pre = k === -1;    // respiro antes do drop
-      // antes do drop a batida fica contida: o pico (9–12 s) precisa de contraste
-      if (!pre) this.kick(t, k >= 0 ? 1 : 0.6);
-      if (k >= -7 && k % 2 !== 0 && !pre) this.clap(t, k >= 0 ? 1 : 0.45);
-      if (k < -7 && k % 2 !== 0) this.rim(t, 0.7);
-      // hats: colcheias antes, semicolcheias no pico
-      var subdiv = k >= 0 ? 4 : 2;
+    // pads (entrada suave com a interface; ficam mais abertos no pico)
+    var introStart = t0 + m.intro;
+    this.pad(introStart, Am9, b(-20) - introStart, 0.075, 950);
+    [[-20, Fmaj7, 1000], [-16, G6, 1000], [-12, Fmaj7, 1150], [-8, Cmaj7, 1250], [-4, G6, 1350],
+     [0, Am9, 1900], [4, Fmaj7, 2000], [8, G6, 1800]].forEach(function (p) {
+      var len = p[0] === 8 ? beat : beat * 4;
+      self.pad(b(p[0]), p[1], len, p[0] >= 0 ? 0.058 : 0.05, p[2]);
+    });
+    this.pad(b(OUT), Am9, b(FIN) - b(OUT), 0.05, 1100);
+    this.pad(b(FIN), Am9hi, 1.8, 0.065, 1500);
+
+    // hats suaves na introdução
+    for (var k = G0 - 6; k < G0; k += 0.5) if (b(k) > introStart + 0.4) this.hat(b(k), 0.28, false);
+
+    for (k = G0; k < OUT; k++) {
+      var t = b(k);
+      var pre = k === -1;                       // respiro antes do drop
+      var brk = k >= BRK && k < WRD;            // breakdown: smartphone gira
+      var peak = k >= 0;
+      var words = k >= WRD && k < 0;
+      var ch = chordAt(k);
+
+      if (!pre && !brk) this.kick(t, peak ? 1 : words ? 0.62 : 0.5);
+      if (words && k % 2 !== 0 && !pre) this.clap(t, 0.45);
+      if (peak && k % 2 !== 0) this.clap(t, 0.9);
+      if (!peak && !words && k % 2 !== 0 && !brk) this.rim(t, 0.6);
+
+      var subdiv = peak ? 4 : 2;
       for (var s = 0; s < subdiv; s++) {
-        var ht = t + (s * beat) / subdiv;
         if (pre && s > 0) continue;
-        if (s === 0 && k >= 0) continue;
-        this.hat(ht, k >= 0 ? (s === 2 ? 0.9 : 0.55) : (s === 1 ? 0.6 : 0.28), k >= 0 && s === 2);
+        if (s === 0 && peak) continue;
+        var ht = t + (s * beat) / subdiv;
+        this.hat(ht, peak ? (s === 2 ? 0.85 : 0.5) : (s === 1 ? (brk ? 0.4 : 0.55) : 0.25), peak && s === 2);
       }
-      // baixo: colcheias
-      if (!pre) {
-        this.bass(t + beat * 0.5, bassFor(k), beat * 0.42, k >= 0 ? 1 : 0.72);
-        if (k >= 0) this.bass(t, bassFor(k), beat * 0.4, 0.7);
+
+      if (!pre && !brk) {
+        this.bass(t + beat * 0.5, ch.bass, beat * 0.42, peak ? 0.95 : words ? 0.72 : 0.62);
+        if (peak) this.bass(t, ch.bass, beat * 0.4, 0.65);
       }
     }
 
     // arpejo discreto no pico
     var arp = [69, 72, 76, 79, 76, 72];
-    for (k = 0; k < 6; k++) {
+    for (k = 0; k < OUT - 1; k++) {
       for (s = 0; s < 4; s++) {
         var idx = (k * 4 + s) % arp.length;
-        var shift = k >= 2 && k < 4 ? -4 : (k >= 4 ? -2 : 0);
-        self.pluck(b(k) + (s * beat) / 4, arp[idx] + shift, 0.045, s % 2 ? 0.3 : -0.3);
+        var shift = k >= 4 ? -4 : 0;
+        self.pluck(b(k) + (s * beat) / 4, arp[idx] + shift, 0.04, s % 2 ? 0.3 : -0.3);
       }
     }
 
-    // stabs em cada palavra (SITES / LANDING / SISTEMAS) e no drop
-    this.stab(b(-6), [53, 57, 60, 64], 0.11);
-    this.stab(b(-4), [48, 52, 55, 59], 0.11);
-    this.stab(b(-2), [50, 55, 59, 62], 0.11);
-    this.stab(b(0), [57, 60, 64, 67], 0.13, 3200);
-    this.crash(b(0), { v: 1 });
+    // stabs nas palavras e no drop
+    this.stab(b(-12), [53, 57, 60, 64], 0.09);
+    this.stab(b(-8), [48, 52, 55, 59], 0.09);
+    this.stab(b(-4), [50, 55, 59, 62], 0.09);
+    this.stab(b(0), [57, 60, 64, 67], 0.11, 2800);
+    this.crash(b(0), { v: 0.8 });
 
-    // desaceleração: fecha o filtro e o pulso fica espaçado
-    this.musicLP.frequency.setValueAtTime(18000, b(5.9));
-    this.musicLP.frequency.exponentialRampToValueAtTime(650, b(7));
-    this.musicLP.frequency.setValueAtTime(650, b(8.9));
-    this.musicLP.frequency.exponentialRampToValueAtTime(2600, b(9.05));
-    this.kick(b(7), 0.45);
-    this.pluck(b(7), 64, 0.06, -0.2);
-    this.pluck(b(7) + beat / 2, 67, 0.05, 0.2);
-    this.pluck(b(7) + beat, 71, 0.05, 0);
+    // desaceleração: o filtro fecha, o pulso fica espaçado e a trilha respira
+    this.musicLP.frequency.setValueAtTime(18000, b(OUT - 0.1));
+    this.musicLP.frequency.exponentialRampToValueAtTime(650, b(OUT + 1.6));
+    this.musicLP.frequency.setValueAtTime(650, b(FIN - 0.15));
+    this.musicLP.frequency.exponentialRampToValueAtTime(2400, b(FIN + 0.1));
+    this.kick(b(OUT + 2), 0.35);
+    this.pluck(b(OUT + 2), 64, 0.05, -0.2);
+    this.pluck(b(OUT + 2.5), 67, 0.045, 0.2);
+    this.pluck(b(OUT + 3), 71, 0.045, 0);
+    this.kick(b(OUT + 4), 0.25);
   };
 
   /* ---------- agendamento completo ---------- */
@@ -509,7 +526,7 @@ window.ShowreelAudio = (function () {
     media = media || {};
 
     if (plan.sfxOn !== false) {
-      this.room(t0, 2.1);
+      this.room(t0, plan.music && plan.music.intro ? plan.music.intro + 0.4 : 2.1);
       plan.cues.forEach(function (c) {
         var fn = self[c.type];
         if (typeof fn === "function") fn.call(self, t0 + c.t, c);
@@ -556,7 +573,7 @@ window.ShowreelAudio = (function () {
     // fade final suave
     var endT = t0 + plan.duration;
     var vol = this.out.gain.value;
-    this.out.gain.setValueAtTime(vol, endT - 0.55);
+    this.out.gain.setValueAtTime(vol, endT - 0.6);
     this.out.gain.exponentialRampToValueAtTime(0.0001, endT);
   };
 
@@ -617,7 +634,7 @@ window.ShowreelAudio = (function () {
         media.narrationMode = "single";
         media.narration = [Object.assign({ cue: 0, volume: n.volume, src: n.single }, s)];
         // segmentos aproximados de fala (para ducking) a partir dos cues configurados
-        media.narration[0].segments = (n.lines || []).map(function (l) { return { start: l.cue, end: l.cue + 1.7 }; });
+        media.narration[0].segments = (n.lines || []).map(function (l) { return { start: l.cue, end: l.cue + 2.2 }; });
         return;
       }
       return Promise.all((n.lines || []).map(function (l) {

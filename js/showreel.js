@@ -1,16 +1,16 @@
 /* ==========================================================================
    SHOWREEL — "SUA IDEIA. NOSSO CÓDIGO."
-   Uma única timeline GSAP (15 s) dirige todas as cenas. O relógio do áudio
+   Uma única timeline GSAP (30 s) dirige todas as cenas. O relógio do áudio
    (AudioContext) é o relógio mestre: a timeline é posicionada a cada frame
    no tempo exato do som — sincronia sem deriva entre imagem, trilha e voz.
 
-   Mapa de tempo (s)               Batida 126 BPM ancorada no drop (9.10 s)
-   0.00  A IDEIA (digitação)        3.386 DESIGN → CÓDIGO (impacto)
-   2.00  BLOCOS → INTERFACE         6.243 SITES · 7.195 LANDING · 8.148 SISTEMAS
-   3.95  EXPERIÊNCIA / RESPONSIVO   9.100 drop · 10.529 NO DIGITAL
-   5.77  SITES / LANDING / SISTEMAS 11.957 desaceleração · 13.386 assinatura
-   9.05  SUA EMPRESA. NO DIGITAL.
-   12.0  ASSINATURA → preto final
+   Mapa de tempo (s)               Batida 123 BPM ancorada no drop (20.60 s)
+   0.00  A IDEIA (digitação)        7.429  DESIGN → CÓDIGO (impacto)
+   3.90  BLOCOS → INTERFACE         11.332 clique · 13.283 smartphone
+   9.00  EXPERIÊNCIA / RESPONSIVO   14.746 SITES · 16.698 LANDING · 18.649 SISTEMAS
+   13.9  SITES / LANDING / SISTEMAS 20.600 drop · 23.527 NO DIGITAL
+   20.5  SUA EMPRESA. NO DIGITAL.   24.990 desaceleração · 27.917 assinatura
+   25.0  ASSINATURA → preto final
    ========================================================================== */
 
 (function () {
@@ -19,9 +19,9 @@
   const CFG = window.SHOWREEL_CONFIG || {};
   const W = 1920;
   const H = 1080;
-  const DURATION = 15;
-  const BEAT = 60 / 126;
-  const ANCHOR = 9.1;
+  const DURATION = 30;
+  const BEAT = 60 / 123;
+  const ANCHOR = 20.6;
   const beat = (k) => ANCHOR + k * BEAT;
 
   const C = { black: "#080808", white: "#ffffff", light: "#f2f2f2", graphite: "#191919", blue: "#245bff" };
@@ -154,11 +154,11 @@
 
   function wipe(sel, t, dur, from) {
     tl.set(sel, { visibility: "visible" }, t);
-    tl.fromTo(sel, { clipPath: from || "inset(50% 50% 50% 50%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: "expo.inOut", immediateRender: false }, t);
+    tl.fromTo(sel, { clipPath: from || "inset(50% 50% 50% 50%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: "power2.inOut", immediateRender: false }, t);
   }
   /** Revela da esquerda para a direita (clip-path com valores explícitos). */
   function reveal(targets, t, dur, stagger, ease) {
-    tl.fromTo(targets, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: ease || "expo.out", stagger: stagger || 0 }, t);
+    tl.fromTo(targets, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: ease || "power3.out", stagger: stagger || 0 }, t);
   }
 
   /* ------------------------------------------------------------------------
@@ -206,12 +206,12 @@
     });
   }
   function gridIn(t) {
-    tl.to(grid.v, { scaleY: 1, duration: 0.7, ease: "expo.inOut", stagger: { each: 0.022, from: "center" } }, t);
-    tl.to(grid.h, { scaleX: 1, duration: 0.8, ease: "expo.inOut", stagger: 0.06 }, t + 0.05);
+    tl.to(grid.v, { scaleY: 1, duration: 1.1, ease: "power2.inOut", stagger: { each: 0.035, from: "center" } }, t);
+    tl.to(grid.h, { scaleX: 1, duration: 1.2, ease: "power2.inOut", stagger: 0.1 }, t + 0.1);
   }
   function gridOut(t) {
-    tl.to(grid.v, { scaleY: 0, duration: 0.35, ease: "power3.in", stagger: { each: 0.012, from: "edges" } }, t);
-    tl.to(grid.h, { scaleX: 0, duration: 0.35, ease: "power3.in" }, t);
+    tl.to(grid.v, { scaleY: 0, duration: 0.6, ease: "power2.inOut", stagger: { each: 0.02, from: "edges" } }, t);
+    tl.to(grid.h, { scaleX: 0, duration: 0.6, ease: "power2.inOut" }, t);
   }
 
   /* ------------------------------------------------------------------------
@@ -220,17 +220,17 @@
   const hud = {};
   function buildHud() {
     const labels = ["01 / THE IDEA", "02 / DESIGN → CODE", "03 / EXPERIENCE", "04 / SERVICES", "05 / PRESENCE", "06 / LET'S TALK"];
-    const times = [0, 2.1, 3.95, 5.8, 9.05, 11.96];
+    const times = [0, 3.95, 9.2, 13.9, 20.5, 24.99];
     const roll = $(".roll");
     roll.innerHTML = labels.map((l) => `<span>${l}</span>`).join("");
     const spans = $$("span", roll);
     gsap.set(spans, { yPercent: 110 });
     gsap.set(spans[0], { yPercent: 0 });
     for (let i = 1; i < spans.length; i++) {
-      tl.to(spans[i - 1], { yPercent: -110, duration: 0.4, ease: "power3.inOut" }, times[i]);
-      tl.fromTo(spans[i], { yPercent: 110 }, { yPercent: 0, duration: 0.4, ease: "power3.inOut" }, times[i] + 0.06);
+      tl.to(spans[i - 1], { yPercent: -110, duration: 0.6, ease: "power2.inOut" }, times[i]);
+      tl.fromTo(spans[i], { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "power2.inOut" }, times[i] + 0.1);
     }
-    tl.to("#hud", { opacity: 1, duration: 0.9, ease: "power2.out" }, 0.55);
+    tl.to("#hud", { opacity: 1, duration: 1.4, ease: "power2.out" }, 0.8);
 
     hud.tc = $("#tc");
     hud.hx = $("#hx");
@@ -298,56 +298,60 @@
     const y0 = ideaRect.y - bigY;
     const cx = ideaRect.x + (bw * s0) / 2;
     const cy = ideaRect.y + (fsB * s0) / 2;
-    const s1 = s0 * 1.09;
+    const s1 = s0 * 1.06;
     gsap.set(big, { x: x0, y: y0, scale: s0 });
 
     /* --- timeline --- */
     // cursor piscando sobre o branco absoluto
-    tl.set(caret, { opacity: 0 }, 0.13);
-    tl.set(caret, { opacity: 1 }, 0.25);
+    tl.set(caret, { opacity: 0 }, 0.28);
+    tl.set(caret, { opacity: 1 }, 0.52);
     gsap.set(rule, { scaleX: 0 });
-    tl.to(rule, { scaleX: 1, duration: 0.3, ease: "power2.out" }, 0.26);
+    tl.to(rule, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 0.5);
 
-    // digitação: ritmo humano (determinístico)
+    // digitação: ritmo humano e deliberado (tec… tec… tec…), determinístico
     const rnd = mulberry32(42);
-    let t = 0.3;
+    let t = 0.6;
     const times = [];
     chars.forEach((c, i) => {
       times.push(t);
       const isSpace = c.classList.contains("sp");
       tl.set(c, { display: "inline-block" }, t);
-      sfx("key", t, { v: 0.75 + rnd() * 0.35, space: isSpace });
-      let dt = 0.033 + rnd() * 0.018;
-      if (isSpace) dt += 0.016;
-      if (i === ideaStart - 1) dt += 0.075; // micro-pausa antes de IDEIA
-      if (i >= ideaStart) dt += 0.006;
+      sfx("key", t, { v: 0.7 + rnd() * 0.3, space: isSpace });
+      let dt = 0.05 + rnd() * 0.026;
+      if (isSpace) dt += 0.035;
+      if (i === ideaStart - 1) dt += 0.14; // pausa antes de IDEIA
+      if (i >= ideaStart) dt += 0.01;
       t += dt;
     });
     const typeEnd = times[times.length - 1];
-    tl.to(line, { x: finalX, duration: typeEnd - times[0] + 0.06, ease: "power1.inOut" }, times[0]);
+    tl.to(line, { x: finalX, duration: typeEnd - times[0] + 0.1, ease: "power1.inOut" }, times[0]);
 
     // câmera: aproximação lenta durante a frase, volta a 1 na expansão
-    tl.to("#camera", { scale: 1.035, duration: 1.5, ease: "none" }, 0.1);
-    tl.to("#camera", { scale: 1, duration: 0.4, ease: "power3.inOut" }, 1.6);
+    tl.to("#camera", { scale: 1.04, duration: typeEnd + 0.2, ease: "none" }, 0.2);
+    tl.to("#camera", { scale: 1, duration: 0.85, ease: "power2.inOut" }, typeEnd + 0.4);
 
     // nota "01 / THE IDEA"
-    tl.to(noteTick, { scaleX: 1, duration: 0.45, ease: "expo.out" }, 0.62);
-    reveal(noteTexts, 0.7, 0.5, 0.08);
+    tl.to(noteTick, { scaleX: 1, duration: 0.7, ease: "power3.out" }, 0.9);
+    reveal(noteTexts, 1.0, 0.8, 0.12);
 
-    // impulso de escala → IDEIA ocupa a tela
-    const tImp = typeEnd + 0.06;
+    // pausa com a frase completa; o cursor pisca uma vez
+    tl.set(caret, { opacity: 0 }, typeEnd + 0.12);
+    tl.set(caret, { opacity: 1 }, typeEnd + 0.3);
+
+    // impulso de escala suave → IDEIA ocupa a tela
+    const tImp = typeEnd + 0.36;
     tl.set(chars.slice(ideaStart), { visibility: "hidden" }, tImp);
     tl.set(big, { visibility: "visible" }, tImp);
     tl.set(caret, { opacity: 0 }, tImp);
-    tl.to(chars.slice(0, ideaStart), { y: 40, opacity: 0, duration: 0.22, ease: "power3.in", stagger: { each: 0.006, from: "end" } }, tImp - 0.03);
-    tl.to(rule, { scaleX: 0, transformOrigin: "100% 50%", duration: 0.3, ease: "power3.in" }, tImp);
-    tl.to(note, { opacity: 0, y: -14, duration: 0.25, ease: "power2.in" }, tImp);
-    tl.to(big, { x: cx - bigX - (bw * s1) / 2, y: cy - bigY - (fsB * s1) / 2, scale: s1, duration: 0.12, ease: "back.out(2.4)" }, tImp);
-    tl.to(big, { x: 0, y: 0, scale: 1, duration: 0.36, ease: "expo.inOut" }, tImp + 0.12);
-    sfx("whoosh", tImp, { dur: 0.48, f0: 260, f1: 4200, v: 0.9, pan0: -0.2, pan1: 0.2 });
-    sfx("impact", tImp + 0.42, { size: 0.7, v: 0.75, f: 80 });
+    tl.to(chars.slice(0, ideaStart), { y: 30, opacity: 0, duration: 0.45, ease: "power2.in", stagger: { each: 0.012, from: "end" } }, tImp - 0.08);
+    tl.to(rule, { scaleX: 0, transformOrigin: "100% 50%", duration: 0.5, ease: "power2.inOut" }, tImp - 0.05);
+    tl.to(note, { opacity: 0, y: -12, duration: 0.45, ease: "power2.inOut" }, tImp - 0.05);
+    tl.to(big, { x: cx - bigX - (bw * s1) / 2, y: cy - bigY - (fsB * s1) / 2, scale: s1, duration: 0.22, ease: "power2.out" }, tImp);
+    tl.to(big, { x: 0, y: 0, scale: 1, duration: 0.72, ease: "power3.inOut" }, tImp + 0.2);
+    sfx("whoosh", tImp, { dur: 0.95, f0: 220, f1: 2800, v: 0.6, pan0: -0.2, pan1: 0.2, peak: 0.75 });
+    sfx("impact", tImp + 0.9, { size: 0.6, v: 0.5, f: 75, bright: 1100 });
 
-    S1.tEnd = tImp + 0.48; // IDEIA ocupa a tela
+    S1.tEnd = tImp + 0.92; // IDEIA ocupa a tela
     S1.bch = bch;
     S1.inkBoxes = inkBoxes;
     S1.big = big;
@@ -420,20 +424,22 @@
     S1.inkBoxes.forEach((b, i) => gsap.set(blocks[i], Object.assign({ scaleY: 0, borderRadius: 0, backgroundColor: C.blue }, b)));
 
     /* --- timeline --- */
-    const tB = S1.tEnd + 0.02;
+    const tB = S1.tEnd + 0.12;
+    const blockDur = 0.3;
+    const blockStg = 0.04;
     tl.set(blocks, { visibility: "visible" }, tB);
-    tl.to(blocks, { scaleY: 1, duration: 0.16, ease: "power3.out", stagger: 0.022 }, tB);
-    S1.bch.forEach((c, i) => tl.set(c, { opacity: 0 }, tB + i * 0.022 + 0.16));
-    tl.set(S1.big, { visibility: "hidden" }, tB + 0.3);
-    sfx("glitch", tB, { n: 6, step: 0.022 });
+    tl.to(blocks, { scaleY: 1, duration: blockDur, ease: "power2.out", stagger: blockStg }, tB);
+    S1.bch.forEach((c, i) => tl.set(c, { opacity: 0 }, tB + i * blockStg + blockDur));
+    tl.set(S1.big, { visibility: "hidden" }, tB + 0.6);
+    blocks.forEach((b, i) => sfx("blip", tB + i * blockStg + 0.05, { f: 700 + i * 120, len: 0.03, v: 0.45 }));
 
     // fundo grafite expande a partir do centro
-    const tM = tB + 0.2;
-    wipe("#wipe-graphite", tM, 0.55);
-    bgSet(C.graphite, tM + 0.6);
-    tl.set("#wipe-graphite", { visibility: "hidden" }, tM + 0.6);
-    inkTo(C.white, tM + 0.15);
-    gridIn(tM + 0.1);
+    const tM = tB + 0.42;
+    wipe("#wipe-graphite", tM, 1.0);
+    bgSet(C.graphite, tM + 1.02);
+    tl.set("#wipe-graphite", { visibility: "hidden" }, tM + 1.03);
+    inkTo(C.white, tM + 0.35);
+    gridIn(tM + 0.3);
 
     // morph dos blocos para os componentes da interface
     blocks.forEach((b, i) => {
@@ -441,22 +447,22 @@
       tl.to(b, {
         left: tg.r.x, top: tg.r.y, width: tg.r.w, height: tg.r.h,
         borderRadius: tg.radius, backgroundColor: tg.color,
-        duration: 0.48, ease: "expo.inOut"
-      }, tM + i * 0.025);
-      sfx("blip", tM + 0.4 + i * 0.025, { f: 900 + i * 170, len: 0.03, v: 0.8 });
+        duration: 0.9, ease: "power3.inOut"
+      }, tM + i * 0.05);
+      sfx("blip", tM + 0.8 + i * 0.05, { f: 900 + i * 170, len: 0.03, v: 0.55 });
     });
-    sfx("whoosh", tM, { dur: 0.55, f0: 200, f1: 2600, v: 0.85, pan0: -0.5, pan1: 0.4 });
+    sfx("whoosh", tM, { dur: 1.0, f0: 200, f1: 1900, v: 0.6, pan0: -0.5, pan1: 0.4 });
 
     // o navegador real assume o lugar dos blocos
-    const tR = tM + 0.6;
+    const tR = tM + 1.18;
     tl.set(browser, { visibility: "visible" }, tR);
     tl.set(blocks, { visibility: "hidden" }, tR + 0.02);
-    tl.to(".br-chrome", { backgroundColor: C.light, borderBottomColor: "rgba(230,230,230,1)", duration: 0.3, ease: "power2.out" }, tR);
-    tl.to(".br-dots, .br-url", { opacity: 1, duration: 0.3, ease: "power2.out", stagger: 0.05 }, tR + 0.05);
-    tl.to(rv, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out", stagger: 0.022 }, tR + 0.04);
-    tl.to(artBits, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.7)", stagger: 0.04 }, tR);
-    tl.to(".br-gridov i", { scaleY: 1, duration: 0.5, ease: "expo.out", stagger: 0.014 }, tR + 0.1);
-    sfx("click", tR, { v: 0.6 });
+    tl.to(".br-chrome", { backgroundColor: C.light, borderBottomColor: "rgba(230,230,230,1)", duration: 0.5, ease: "power2.out" }, tR);
+    tl.to(".br-dots, .br-url", { opacity: 1, duration: 0.5, ease: "power2.out", stagger: 0.08 }, tR + 0.05);
+    tl.to(rv, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.035 }, tR + 0.05);
+    tl.to(artBits, { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.2)", stagger: 0.07 }, tR);
+    tl.to(".br-gridov i", { scaleY: 1, duration: 0.8, ease: "power3.out", stagger: 0.025 }, tR + 0.2);
+    sfx("click", tR, { v: 0.5 });
 
     S2.browser = browser;
     S2.codeTargets = codeTargets;
@@ -540,20 +546,20 @@
     gsap.set(metaBits, { clipPath: "inset(0% 100% 0% 0%)" });
 
     /* --- timeline --- */
-    const tD = 2.62;
-    tl.to(dChars, { yPercent: 0, duration: 0.55, ease: "expo.out", stagger: 0.035 }, tD);
-    reveal(metaBits, tD + 0.1, 0.5, 0.1);
-    sfx("whoosh", tD - 0.05, { dur: 0.4, f0: 600, f1: 2400, v: 0.55, pan0: 0, pan1: 0 });
+    const tHit = beat(-27); // 7.429 — impacto grave DESIGN → CÓDIGO
+    const tD = tHit - 1.78;
+    tl.to(dChars, { yPercent: 0, duration: 0.8, ease: "power3.out", stagger: 0.045 }, tD);
+    reveal(metaBits, tD + 0.2, 0.8, 0.15);
+    sfx("whoosh", tD - 0.05, { dur: 0.7, f0: 500, f1: 2000, v: 0.4, pan0: 0, pan1: 0 });
 
-    const tHit = beat(-12); // 3.386 — impacto grave DESIGN → CÓDIGO
-    const tS = tHit - 0.36;
+    const tS = tHit - 0.62;
     tl.set(echoes, { visibility: "visible" }, tS);
-    tl.to(ticker, { x: -shift, duration: 0.42, ease: "expo.inOut" }, tS);
-    echoes.forEach((e, i) => tl.to(e, { x: -shift, duration: 0.42, ease: "expo.inOut" }, tS + 0.02 * (i + 1)));
-    tl.set(echoes, { visibility: "hidden" }, tS + 0.55);
-    tl.fromTo(cChars, { scaleX: 1.1, transformOrigin: "50% 100%" }, { scaleX: 1, duration: 0.4, ease: "back.out(2.2)", stagger: 0.012 }, tHit - 0.04);
-    sfx("whoosh", tS, { dur: 0.42, f0: 300, f1: 3000, v: 0.9, pan0: 0.6, pan1: -0.4 });
-    sfx("impact", tHit, { size: 1.1, v: 1, f: 100, bright: 1900 });
+    tl.to(ticker, { x: -shift, duration: 0.8, ease: "power3.inOut" }, tS);
+    echoes.forEach((e, i) => tl.to(e, { x: -shift, duration: 0.8, ease: "power3.inOut" }, tS + 0.03 * (i + 1)));
+    tl.set(echoes, { visibility: "hidden" }, tS + 0.95);
+    tl.fromTo(cChars, { scaleX: 1.04, transformOrigin: "50% 100%" }, { scaleX: 1, duration: 0.6, ease: "power2.out", stagger: 0.02 }, tHit - 0.1);
+    sfx("whoosh", tS, { dur: 0.8, f0: 300, f1: 2200, v: 0.65, pan0: 0.6, pan1: -0.4, peak: 0.7 });
+    sfx("impact", tHit, { size: 1.0, v: 0.8, f: 95, bright: 1500 });
 
     // CÓDIGO se desmonta em linhas de programação...
     const frags = $("#code-frags");
@@ -577,13 +583,13 @@
       }
     });
 
-    const tX = tHit + 0.1;
-    tl.to(cChars, { opacity: 0, scaleY: 0.25, transformOrigin: "50% 50%", duration: 0.2, ease: "power2.in", stagger: 0.022 }, tX);
+    const tX = tHit + 0.5;
+    tl.to(cChars, { opacity: 0, scaleY: 0.3, transformOrigin: "50% 50%", duration: 0.4, ease: "power2.inOut", stagger: 0.045 }, tX);
     lines.forEach((l) => {
-      tl.set(l.el, { visibility: "visible" }, tX + l.ci * 0.022);
-      reveal(l.el, tX + l.ci * 0.022 + 0.04, 0.2, 0, "power2.out");
+      tl.set(l.el, { visibility: "visible" }, tX + l.ci * 0.045);
+      reveal(l.el, tX + l.ci * 0.045 + 0.08, 0.35, 0, "power2.out");
     });
-    sfx("glitch", tX, { n: 12, step: 0.019 });
+    sfx("glitch", tX, { n: 9, step: 0.04 });
 
     // ...que voam e se reorganizam como elementos da interface
     const browser = S2.browser;
@@ -593,22 +599,22 @@
       const cy = Math.min(r.y + r.h / 2, page.y + page.h - 14);
       return { x: r.x + r.w / 2, y: cy, w: r.w };
     });
-    const tF = tX + 0.3;
+    const tF = tX + 0.62;
     const arrivals = S2.codeTargets.map(() => Infinity);
     lines.forEach((l, i) => {
       const ti = i % tgtRects.length;
       const tg = tgtRects[ti];
       const w = l.el.offsetWidth;
       const s = Math.max(0.28, Math.min(0.75, tg.w / w));
-      const start = tF + i * 0.006;
-      const dur = 0.3;
-      tl.to(l.el, { x: tg.x - (l.x + (w * s) / 2), y: tg.y - (l.y + 10), scale: s, duration: dur, ease: "power3.inOut" }, start);
-      tl.to(l.el, { opacity: 0, duration: 0.1, ease: "power1.in" }, start + dur - 0.08);
-      arrivals[ti] = Math.min(arrivals[ti], start + dur - 0.06);
+      const start = tF + i * 0.012;
+      const dur = 0.65;
+      tl.to(l.el, { x: tg.x - (l.x + (w * s) / 2), y: tg.y - (l.y + 10), scale: s, duration: dur, ease: "power2.inOut" }, start);
+      tl.to(l.el, { opacity: 0, duration: 0.2, ease: "power1.in" }, start + dur - 0.16);
+      arrivals[ti] = Math.min(arrivals[ti], start + dur - 0.12);
     });
-    S2.codeTargets.forEach((el, i) => tl.to(el, { opacity: 1, duration: 0.22, ease: "power2.out" }, arrivals[i]));
-    for (let k = 0; k < 5; k++) sfx("tick", tF + 0.24 + k * 0.03, { f: 2600 + k * 300, v: 0.8 });
-    tl.to(metaBits, { opacity: 0, duration: 0.25, ease: "power2.in" }, tF + 0.15);
+    S2.codeTargets.forEach((el, i) => tl.to(el, { opacity: 1, duration: 0.4, ease: "power2.out" }, arrivals[i]));
+    for (let k = 0; k < 4; k++) sfx("tick", tF + 0.55 + k * 0.06, { f: 2600 + k * 300, v: 0.5 });
+    tl.to(metaBits, { opacity: 0, duration: 0.4, ease: "power2.inOut" }, tF + 0.2);
 
   }
 
@@ -631,44 +637,44 @@
     gsap.set(".ui-burger", { opacity: 0 });
 
     /* --- push-in de câmera --- */
-    const tP = 3.98;
-    tl.to(browser, { x: BR.s3.x, y: BR.s3.y, scale: BR.s3.scale, duration: 0.62, ease: "power3.inOut" }, tP);
-    tl.to(".br-gridov i", { scaleY: 0, transformOrigin: "50% 100%", duration: 0.3, ease: "power2.in", stagger: 0.01 }, tP - 0.05);
-    gridOut(tP - 0.05);
-    sfx("whoosh", tP, { dur: 0.6, f0: 180, f1: 1400, v: 0.7, pan0: 0, pan1: 0, rev: 0.35 });
+    const tP = 9.2;
+    tl.to(browser, { x: BR.s3.x, y: BR.s3.y, scale: BR.s3.scale, duration: 1.15, ease: "power2.inOut" }, tP);
+    tl.to(".br-gridov i", { scaleY: 0, transformOrigin: "50% 100%", duration: 0.5, ease: "power2.inOut", stagger: 0.015 }, tP - 0.15);
+    gridOut(tP - 0.1);
+    sfx("whoosh", tP, { dur: 1.1, f0: 160, f1: 1100, v: 0.5, pan0: 0, pan1: 0, rev: 0.35, peak: 0.7 });
 
     /* --- cursor e microinterações --- */
     const pp = { x: proj.x + proj.w * 0.5, y: proj.y + proj.h * 0.6 };
     const pc = { x: cta.x + cta.w * 0.62, y: cta.y + cta.h * 0.55 };
-    const tClick = beat(-9); // 4.814
-    tl.set(pointer, { visibility: "visible" }, 4.26);
-    tl.to(pointer, { x: pp.x, y: pp.y, duration: 0.3, ease: "power3.inOut" }, 4.26);
-    tl.to(".is-proj", { "--u": 1, color: C.blue, duration: 0.2, ease: "power2.out" }, 4.5);
-    sfx("tick", 4.52, { f: 2400, v: 0.7 });
-    tl.to(pointer, { x: pc.x, y: pc.y, duration: 0.2, ease: "power3.inOut" }, 4.6);
-    tl.to(".is-proj", { "--u": 0, color: "#2a2a2a", duration: 0.2, ease: "power2.out" }, 4.64);
-    tl.to(".ui-cta", { backgroundColor: C.black, duration: 0.16, ease: "power2.out" }, 4.72);
-    tl.to(".cta-arr", { x: 6, duration: 0.2, ease: "power2.out" }, 4.72);
-    // clique: squash & stretch no botão e no cursor
-    tl.to(pointer, { scale: 0.8, duration: 0.05, ease: "power2.in" }, tClick - 0.02);
-    tl.to(pointer, { scale: 1, duration: 0.25, ease: "back.out(3)" }, tClick + 0.03);
-    tl.to(".ui-cta", { scaleX: 0.95, scaleY: 0.92, duration: 0.05, ease: "power2.in" }, tClick - 0.02);
-    tl.to(".ui-cta", { scaleX: 1, scaleY: 1, duration: 0.35, ease: "back.out(3)" }, tClick + 0.03);
-    sfx("click", tClick, { v: 1 });
-    tl.to(".ui-cta", { backgroundColor: C.blue, duration: 0.3, ease: "power2.out" }, 5.0);
-    tl.to(".cta-arr", { x: 0, duration: 0.3, ease: "power2.out" }, 5.0);
+    const tClick = beat(-19); // 11.332
+    tl.set(pointer, { visibility: "visible" }, 10.05);
+    tl.to(pointer, { x: pp.x, y: pp.y, duration: 0.6, ease: "power2.inOut" }, 10.05);
+    tl.to(".is-proj", { "--u": 1, color: C.blue, duration: 0.3, ease: "power2.out" }, 10.55);
+    sfx("tick", 10.58, { f: 2400, v: 0.5 });
+    tl.to(pointer, { x: pc.x, y: pc.y, duration: 0.45, ease: "power2.inOut" }, 10.78);
+    tl.to(".is-proj", { "--u": 0, color: "#2a2a2a", duration: 0.3, ease: "power2.out" }, 10.85);
+    tl.to(".ui-cta", { backgroundColor: C.black, duration: 0.3, ease: "power2.out" }, 11.08);
+    tl.to(".cta-arr", { x: 6, duration: 0.35, ease: "power2.out" }, 11.08);
+    // clique: squash & stretch discreto no botão e no cursor
+    tl.to(pointer, { scale: 0.86, duration: 0.07, ease: "power2.in" }, tClick - 0.04);
+    tl.to(pointer, { scale: 1, duration: 0.4, ease: "back.out(1.6)" }, tClick + 0.03);
+    tl.to(".ui-cta", { scaleX: 0.97, scaleY: 0.95, duration: 0.07, ease: "power2.in" }, tClick - 0.04);
+    tl.to(".ui-cta", { scaleX: 1, scaleY: 1, duration: 0.45, ease: "back.out(1.6)" }, tClick + 0.03);
+    sfx("click", tClick, { v: 0.8 });
+    tl.to(".ui-cta", { backgroundColor: C.blue, duration: 0.4, ease: "power2.out" }, 11.8);
+    tl.to(".cta-arr", { x: 0, duration: 0.4, ease: "power2.out" }, 11.8);
 
     // rolagem simulada + cards deslizando para dentro
-    tl.to(".br-scroll", { y: -150, duration: 0.36, ease: "power3.inOut" }, 4.88);
-    tl.from(".ui-card", { y: 70, duration: 0.5, ease: "expo.out", stagger: 0.05, immediateRender: false }, 4.9);
-    sfx("whoosh", 4.88, { dur: 0.32, f0: 900, f1: 2200, v: 0.35, pan0: 0, pan1: 0, rev: 0.1 });
-    tl.to(pointer, { x: pc.x + 220, y: pc.y + 260, opacity: 0, duration: 0.35, ease: "power3.in" }, 5.0);
-    tl.set(pointer, { visibility: "hidden" }, 5.36);
+    tl.to(".br-scroll", { y: -150, duration: 0.7, ease: "power2.inOut" }, 11.45);
+    tl.from(".ui-card", { y: 60, duration: 0.8, ease: "power3.out", stagger: 0.08, immediateRender: false }, 11.5);
+    sfx("whoosh", 11.45, { dur: 0.6, f0: 800, f1: 1800, v: 0.25, pan0: 0, pan1: 0, rev: 0.1 });
+    tl.to(pointer, { x: pc.x + 200, y: pc.y + 240, opacity: 0, duration: 0.5, ease: "power2.in" }, 11.65);
+    tl.set(pointer, { visibility: "hidden" }, 12.2);
 
     /* --- desktop → tablet → mobile --- */
-    const tC = 5.22;
-    const dC = beat(-7) - tC; // termina na batida (5.767)
-    const ez = "power4.inOut";
+    const tC = 12.1;
+    const dC = beat(-15) - tC; // termina na batida (13.283)
+    const ez = "power3.inOut";
     tl.to(browser, {
       width: BR.phone.width, height: BR.phone.height, x: BR.phone.x, y: BR.phone.y, scale: BR.phone.scale,
       "--radius": "54px", "--bezel": "12px", "--chrome-h": "50px", duration: dC, ease: ez
@@ -676,18 +682,18 @@
     tl.to(".br-scroll", { y: 0, duration: dC, ease: ez }, tC);
     Object.keys(LAYOUT).forEach((sel) => tl.to($(sel, browser), Object.assign({ duration: dC, ease: ez }, LAYOUT[sel].m), tC));
     tl.to(".br-chrome", { backgroundColor: C.white, borderBottomColor: "rgba(230,230,230,0)", duration: dC, ease: ez }, tC);
-    tl.to(".br-dots, .br-lock, .br-url-text", { opacity: 0, duration: 0.15, ease: "power1.in" }, tC);
+    tl.to(".br-dots, .br-lock, .br-url-text", { opacity: 0, duration: 0.3, ease: "power1.inOut" }, tC);
     tl.to(".br-url", { width: 118, height: 33, backgroundColor: C.black, duration: dC, ease: ez }, tC);
-    tl.to(".br-time, .br-icons", { opacity: 1, duration: 0.2, ease: "power2.out" }, tC + dC * 0.6);
-    tl.to(".ui-links", { opacity: 0, scale: 0.6, duration: dC * 0.45, ease: "power2.in" }, tC);
-    tl.to(".ui-navbtn", { opacity: 0, scale: 0.7, duration: dC * 0.45, ease: "power2.in" }, tC);
-    tl.to(".ui-burger", { opacity: 1, duration: 0.2, ease: "power2.out" }, tC + dC * 0.55);
+    tl.to(".br-time, .br-icons", { opacity: 1, duration: 0.35, ease: "power2.out" }, tC + dC * 0.6);
+    tl.to(".ui-links", { opacity: 0, scale: 0.7, duration: dC * 0.45, ease: "power2.inOut" }, tC);
+    tl.to(".ui-navbtn", { opacity: 0, scale: 0.8, duration: dC * 0.45, ease: "power2.inOut" }, tC);
+    tl.to(".ui-burger", { opacity: 1, duration: 0.3, ease: "power2.out" }, tC + dC * 0.55);
     if ($(".br-screen.has-shot")) tl.to(".br-shot", { opacity: 0, duration: dC * 0.5 }, tC);
-    sfx("whoosh", tC, { dur: dC + 0.05, f0: 2600, f1: 380, v: 0.55, pan0: 0.3, pan1: -0.3, peak: 0.4 });
+    sfx("whoosh", tC, { dur: dC + 0.05, f0: 2200, f1: 380, v: 0.4, pan0: 0.3, pan1: -0.3, peak: 0.45 });
 
     // ticks quando a largura cruza os breakpoints
-    sfx("tick", crossTime(tC, dC, 1600, 430, 1024, ez), { f: 2900, v: 1 });
-    sfx("tick", crossTime(tC, dC, 1600, 430, 640, ez), { f: 3300, v: 1 });
+    sfx("tick", crossTime(tC, dC, 1600, 430, 1024, ez), { f: 2900, v: 0.7 });
+    sfx("tick", crossTime(tC, dC, 1600, 430, 640, ez), { f: 3300, v: 0.7 });
 
     /* --- RESPONSIVO. se adapta ao espaço disponível --- */
     const respWrap = $("#resp-wrap");
@@ -697,7 +703,7 @@
     const dvs = $$("#resp-meta .dv");
     const wNum = $("#w-num");
     gsap.set(respWrap, { opacity: 1 });
-    tl.set(respWrap, { visibility: "visible" }, tC + 0.12);
+    tl.set(respWrap, { visibility: "visible" }, tC + 0.2);
     derived.push(() => {
       if (getComputedStyle(respWrap).visibility === "hidden") return;
       const bx = gsap.getProperty(browser, "x");
@@ -811,26 +817,26 @@
     S4.cards = cards;
 
     /* --- smartphone gira e vira o fundo azul --- */
-    const tR = beat(-7) - 0.02;
-    tl.to(S3.respWrap, { opacity: 0, x: 70, duration: 0.3, ease: "power3.in" }, tR - 0.05);
-    tl.set(S3.respWrap, { visibility: "hidden" }, tR + 0.3);
-    tl.to(".br-blue", { opacity: 1, duration: 0.16, ease: "power2.in" }, tR);
-    tl.to(browser, { "--bezel-c": C.blue, "--ring-c": C.blue, duration: 0.16, ease: "power2.in" }, tR);
+    const tR = 13.95;
+    tl.to(S3.respWrap, { opacity: 0, x: 60, duration: 0.5, ease: "power2.inOut" }, tR - 0.1);
+    tl.set(S3.respWrap, { visibility: "hidden" }, tR + 0.45);
+    tl.to(".br-blue", { opacity: 1, duration: 0.35, ease: "power2.inOut" }, tR);
+    tl.to(browser, { "--bezel-c": C.blue, "--ring-c": C.blue, duration: 0.35, ease: "power2.inOut" }, tR);
     tl.to(browser, {
       rotation: -90, x: 960, y: 540, width: 2300, height: 2300, scale: 1,
-      "--radius": "0px", "--bezel": "0px", duration: 0.46, ease: "power3.inOut"
-    }, tR + 0.06);
-    const tBlue = tR + 0.52;
+      "--radius": "0px", "--bezel": "0px", duration: 0.82, ease: "power2.inOut"
+    }, tR + 0.05);
+    const tBlue = tR + 0.88;
     bgSet(C.blue, tBlue);
     tl.set(browser, { visibility: "hidden" }, tBlue + 0.01);
-    sfx("whoosh", tR, { dur: 0.5, f0: 260, f1: 2200, v: 0.75, pan0: -0.6, pan1: 0.6 });
-    tl.to(focus, { x: 960, y: 540, duration: 0.5, ease: "power2.inOut" }, tR);
+    sfx("whoosh", tR, { dur: 0.9, f0: 240, f1: 1600, v: 0.5, pan0: -0.6, pan1: 0.6, peak: 0.65 });
+    tl.to(focus, { x: 960, y: 540, duration: 0.8, ease: "power2.inOut" }, tR);
 
     /* --- palavras --- */
     const words = [
-      { key: "sites", lines: ["SITES."], w: 1420, fill: C.white, bg: C.blue, ink: C.white, t: beat(-6) },
-      { key: "landing", lines: ["LANDING", "PAGES."], w: 1400, fill: C.black, bg: C.white, ink: C.black, t: beat(-4), wipe: "#wipe-white" },
-      { key: "systems", lines: ["SISTEMAS."], w: 1500, fill: C.blue, bg: C.black, ink: C.white, t: beat(-2), wipe: "#wipe-black" }
+      { key: "sites", lines: ["SITES."], w: 1420, fill: C.white, bg: C.blue, ink: C.white, t: beat(-12) },
+      { key: "landing", lines: ["LANDING", "PAGES."], w: 1400, fill: C.black, bg: C.white, ink: C.black, t: beat(-8), wipe: "#wipe-white" },
+      { key: "systems", lines: ["SISTEMAS."], w: 1500, fill: C.blue, bg: C.black, ink: C.white, t: beat(-4), wipe: "#wipe-black" }
     ];
 
     words.forEach((wd, i) => {
@@ -840,55 +846,54 @@
       card.style.clipPath = `url(#clip-${wd.key})`;
       gsap.set(card, { x: 0, y: 0, scale: 1, transformOrigin: "50% 50%", backgroundColor: "transparent" });
       const view = $(".cd-view", card);
-      const zoom = { s: 1, g: built.zoomG, f: built.focal };
+      const zoom = { l: 0, g: built.zoomG, f: built.focal }; // l = ln(escala): zoom com velocidade perceptiva constante
       S4.zooms.push(zoom);
       const T = wd.t;
 
       if (wd.wipe) {
-        wipe(wd.wipe, T - 0.1, 0.42);
-        bgSet(wd.bg, T + 0.34);
-        tl.set(wd.wipe, { visibility: "hidden" }, T + 0.35);
+        wipe(wd.wipe, T - 0.42, 0.88);
+        bgSet(wd.bg, T + 0.47);
+        tl.set(wd.wipe, { visibility: "hidden" }, T + 0.48);
       }
-      inkTo(wd.ink, T - 0.05);
+      inkTo(wd.ink, T - 0.15);
 
-      // letras sobem pela máscara com overshoot controlado
-      tl.to(built.chars, { y: 0, duration: 0.42, ease: "back.out(1.25)", stagger: Math.min(0.03, 0.15 / Math.max(1, built.chars.length - 1)) }, T - 0.04);
-      sfx("impact", T, { size: 0.75, v: 0.85, f: 120 - i * 12, bright: 2400 });
+      // letras sobem pela máscara, com assentamento suave
+      tl.to(built.chars, { y: 0, duration: 0.65, ease: "back.out(1.1)", stagger: Math.min(0.045, 0.25 / Math.max(1, built.chars.length - 1)) }, T - 0.1);
+      sfx("impact", T, { size: 0.7, v: 0.6, f: 115 - i * 12, bright: 1800 });
 
-      // a interface preenche as letras (rolagem/parallax dentro da tipografia)
-      // a interface "enche" as letras de baixo para cima (sem crossfade)
-      tl.set(card, { visibility: "visible" }, T + 0.34);
-      tl.fromTo(view, { clipPath: "inset(62% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.26, ease: "power3.inOut", immediateRender: false }, T + 0.34);
-      tl.fromTo(inner, { y: 140 }, { y: 0, duration: 0.62, ease: "power3.out" }, T + 0.34);
-      tl.set(built.visGroup, { visibility: "hidden" }, T + 0.58);
-      sfx("blip", T + 0.38, { f: 1800, len: 0.04, v: 0.6, pan: 0 });
+      // a interface "enche" as letras de baixo para cima, com parallax interno
+      tl.set(card, { visibility: "visible" }, T + 0.68);
+      tl.fromTo(view, { clipPath: "inset(62% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.42, ease: "power2.inOut", immediateRender: false }, T + 0.68);
+      tl.fromTo(inner, { y: 160 }, { y: 0, duration: 1.0, ease: "power2.out" }, T + 0.68);
+      tl.set(built.visGroup, { visibility: "hidden" }, T + 1.11);
+      sfx("blip", T + 0.72, { f: 1700, len: 0.04, v: 0.4, pan: 0 });
 
       // zoom através da letra "I": a interface toma a tela
-      tl.to(zoom, { s: 48, duration: 0.3, ease: "power3.in" }, T + 0.6);
-      tl.set(card, { clipPath: "none" }, T + 0.92);
-      sfx("whoosh", T + 0.6, { dur: 0.34, f0: 500, f1: 3600, v: 0.6, pan0: 0, pan1: 0, rev: 0.2 });
+      tl.to(zoom, { l: Math.log(40), duration: 0.63, ease: "sine.inOut" }, T + 1.12);
+      tl.set(card, { clipPath: "none" }, T + 1.76);
+      sfx("whoosh", T + 1.12, { dur: 0.65, f0: 400, f1: 2400, v: 0.45, pan0: 0, pan1: 0, rev: 0.2, peak: 0.7 });
 
       if (i < 2) {
-        // estaciona como miniatura (índice editorial)
+        // estaciona como miniatura (índice editorial): sai do centro antes da próxima palavra
         const sl = SLOTS[i];
-        tl.to(card, { x: sl.cx - 960, y: sl.cy - 540, scale: 0.16, duration: 0.34, ease: "expo.inOut" }, T + 0.92);
+        tl.to(card, { x: sl.cx - 960, y: sl.cy - 540, scale: 0.16, duration: 0.85, ease: "power3.out" }, T + 1.77);
         const lb = labels[i];
         gsap.set(lb, { left: sl.cx - 128, top: sl.cy - 72 - 26 });
-        tl.set(lb, { visibility: "visible" }, T + 1.14);
-        tl.fromTo(lb, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, T + 1.14);
-        sfx("tick", T + 1.2, { f: 3000, v: 0.6 });
+        tl.set(lb, { visibility: "visible" }, T + 2.3);
+        tl.fromTo(lb, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, T + 2.3);
+        sfx("tick", T + 2.35, { f: 3000, v: 0.4 });
       }
     });
 
-    // zoom: aplicado a cada frame a partir do proxy
+    // zoom: aplicado a cada frame a partir do proxy (escala = e^l)
     derived.push(() => {
       S4.zooms.forEach((z) => {
         if (!z.f) return;
-        z.g.setAttribute("transform", `translate(${z.f.x} ${z.f.y}) scale(${z.s}) translate(${-z.f.x} ${-z.f.y})`);
+        z.g.setAttribute("transform", `translate(${z.f.x} ${z.f.y}) scale(${Math.exp(z.l)}) translate(${-z.f.x} ${-z.f.y})`);
       });
     });
 
-    sfx("riser", beat(-2) + 0.1, { dur: ANCHOR - (beat(-2) + 0.1), v: 0.9 });
+    sfx("riser", beat(-4) + 0.35, { dur: ANCHOR - (beat(-4) + 0.35), v: 0.7 });
     S4.labels = labels;
   }
 
@@ -898,7 +903,7 @@
   const S5 = {};
   function buildScene5() {
     const cards = S4.cards;
-    const t0 = ANCHOR - 0.08;
+    const t0 = ANCHOR - 0.1;
 
     // composição tridimensional dos três mockups
     const deck3d = [
@@ -906,14 +911,14 @@
       { x: 10, y: 20, z: -40, rotationY: 26, rotationX: 12, rotationZ: -5, scale: 0.42 },
       { x: 480, y: 210, z: 180, rotationY: 26, rotationX: 12, rotationZ: -5, scale: 0.42 }
     ];
-    tl.to(S4.labels.slice(0, 2), { opacity: 0, duration: 0.2, ease: "power2.in" }, t0);
-    cards.forEach((c, i) => tl.to(c, Object.assign({ duration: 0.8, ease: "expo.inOut" }, deck3d[i]), t0 + i * 0.04));
-    tl.to("#deck", { scale: 0.9, duration: 1.5, ease: "power2.out" }, t0);
+    tl.to(S4.labels.slice(0, 2), { opacity: 0, duration: 0.4, ease: "power2.inOut" }, t0);
+    cards.forEach((c, i) => tl.to(c, Object.assign({ duration: 1.3, ease: "power3.inOut" }, deck3d[i]), t0 + i * 0.08));
+    tl.to("#deck", { scale: 0.9, duration: 3.0, ease: "power1.out" }, t0);
     // parallax: cada plano deriva numa velocidade
-    cards.forEach((c, i) => tl.to(c, { y: "-=" + (24 + i * 26), duration: 0.6, ease: "none" }, t0 + 0.82));
-    sfx("impact", ANCHOR, { size: 1.3, v: 1, f: 90, bright: 2600, rev: 0.9 });
-    sfx("whoosh", t0, { dur: 0.7, f0: 180, f1: 1600, v: 0.6, pan0: 0.5, pan1: -0.5, rev: 0.4 });
-    tl.to(focus, { x: 1220, y: 410, duration: 0.8, ease: "power2.inOut" }, t0);
+    cards.forEach((c, i) => tl.to(c, { y: "-=" + (30 + i * 30), duration: 1.1, ease: "none" }, t0 + 1.45));
+    sfx("impact", ANCHOR, { size: 1.15, v: 0.8, f: 85, bright: 2000, rev: 0.9 });
+    sfx("whoosh", t0, { dur: 1.2, f0: 160, f1: 1300, v: 0.45, pan0: 0.5, pan1: -0.5, rev: 0.4, peak: 0.6 });
+    tl.to(focus, { x: 1220, y: 410, duration: 1.2, ease: "power2.inOut" }, t0);
 
     // headline
     const hl1 = $("#hl1");
@@ -952,38 +957,38 @@
     gsap.set(bottom, { left: (W + w2) / 2 - 4, top: base2 + 36, xPercent: -100 });
     gsap.set([top, bottom], { clipPath: "inset(0% 100% 0% 0%)" });
 
-    const tH = 9.78;
+    const tH = beat(3) - 0.05; // 22.01
     // os mockups recuam e escurecem por trás da headline
-    tl.to("#deck-dim", { opacity: 0.9, duration: 0.4, ease: "power2.inOut" }, tH - 0.12);
-    cards.forEach((c, i) => tl.to(c, { z: "-=900", opacity: 0, duration: 0.6, ease: "power2.in" }, tH + 0.05 + (2 - i) * 0.06));
-    tl.set(cards, { visibility: "hidden" }, tH + 0.9);
-    tl.set("#deck-dim", { opacity: 0 }, tH + 0.92); // fundo já é preto: remoção invisível
-    tl.to(c1, { yPercent: 0, duration: 0.55, ease: "back.out(1.6)", stagger: 0.028 }, tH);
-    sfx("whoosh", tH - 0.04, { dur: 0.4, f0: 500, f1: 2600, v: 0.5, pan0: -0.3, pan1: 0.3 });
+    tl.to("#deck-dim", { opacity: 0.9, duration: 0.7, ease: "power2.inOut" }, tH - 0.3);
+    cards.forEach((c, i) => tl.to(c, { z: "-=900", opacity: 0, duration: 1.0, ease: "power2.in" }, tH + 0.1 + (2 - i) * 0.1));
+    tl.set(cards, { visibility: "hidden" }, tH + 1.45);
+    tl.set("#deck-dim", { opacity: 0 }, tH + 1.5); // fundo já é preto: remoção invisível
+    tl.to(c1, { yPercent: 0, duration: 0.8, ease: "back.out(1.2)", stagger: 0.035 }, tH);
+    sfx("whoosh", tH - 0.05, { dur: 0.75, f0: 400, f1: 2000, v: 0.4, pan0: -0.3, pan1: 0.3, peak: 0.6 });
 
     // EMPRESA → NO DIGITAL. (barra azul atravessa a composição)
-    const tBar = beat(3); // 10.529
-    tl.to(m1, { y: base1 - baseA, duration: 0.42, ease: "back.out(1.5)" }, tBar - 0.3);
-    tl.to(bar, { scaleX: 1, duration: 0.24, ease: "power3.inOut" }, tBar - 0.25);
+    const tBar = beat(6); // 23.527
+    tl.to(m1, { y: base1 - baseA, duration: 0.75, ease: "back.out(1.2)" }, tBar - 0.5);
+    tl.to(bar, { scaleX: 1, duration: 0.42, ease: "power2.inOut" }, tBar - 0.42);
     tl.set(hl2, { visibility: "visible" }, tBar - 0.01);
     tl.set(bar, { transformOrigin: "100% 50%" }, tBar);
-    tl.to(bar, { scaleX: 0, duration: 0.26, ease: "power3.inOut" }, tBar);
-    tl.fromTo(hl2, { scaleX: 1.05, transformOrigin: "50% 50%" }, { scaleX: 1, duration: 0.5, ease: "back.out(2.2)" }, tBar + 0.02);
-    sfx("whoosh", tBar - 0.27, { dur: 0.3, f0: 700, f1: 3800, v: 0.6, pan0: -0.7, pan1: 0.7, rev: 0.15 });
-    sfx("impact", tBar, { size: 0.8, v: 0.8, f: 110, bright: 2200 });
+    tl.to(bar, { scaleX: 0, duration: 0.48, ease: "power2.inOut" }, tBar);
+    tl.fromTo(hl2, { scaleX: 1.03, transformOrigin: "50% 50%" }, { scaleX: 1, duration: 0.7, ease: "power3.out" }, tBar + 0.02);
+    sfx("whoosh", tBar - 0.45, { dur: 0.5, f0: 600, f1: 2600, v: 0.4, pan0: -0.7, pan1: 0.7, rev: 0.15 });
+    sfx("impact", tBar, { size: 0.75, v: 0.6, f: 105, bright: 1800 });
 
-    tl.set([top, bottom], { visibility: "visible" }, tBar + 0.1);
-    reveal([top, bottom], tBar + 0.1, 0.5, 0.12);
-    gridIn(tBar + 0.05);
+    tl.set([top, bottom], { visibility: "visible" }, tBar + 0.2);
+    reveal([top, bottom], tBar + 0.2, 0.8, 0.15);
+    gridIn(tBar + 0.1);
     const blc = $$(".s5-blc span");
     blc.forEach((s, i) => {
-      const t = beat(4) + i * BEAT * 0.5;
-      tl.to(s, { color: C.blue, duration: 0.12, ease: "power1.out" }, t);
-      if (i < blc.length - 1) tl.to(s, { color: C.white, duration: 0.2, ease: "power1.out" }, t + BEAT * 0.5);
-      sfx("tick", t, { f: 2600 + i * 400, v: 0.8 });
+      const t = tBar + 0.42 + i * 0.3;
+      tl.to(s, { color: C.blue, duration: 0.2, ease: "power1.out" }, t);
+      if (i < blc.length - 1) tl.to(s, { color: C.white, duration: 0.3, ease: "power1.out" }, t + 0.3);
+      sfx("tick", t, { f: 2600 + i * 400, v: 0.5 });
     });
-    tl.to("#s5-group", { scale: 1.03, duration: 1.4, ease: "none" }, tBar + 0.15);
-    tl.to(focus, { x: 960, y: 540, duration: 0.6, ease: "power2.inOut" }, tH);
+    tl.to("#s5-group", { scale: 1.03, duration: beat(9) - (tBar + 0.2), ease: "none" }, tBar + 0.2);
+    tl.to(focus, { x: 960, y: 540, duration: 0.9, ease: "power2.inOut" }, tH);
 
     S5.m1 = m1;
     S5.m2 = m2;
@@ -1001,7 +1006,7 @@
      CENA 6 — ASSINATURA E CHAMADA FINAL
      ======================================================================== */
   function buildScene6() {
-    const t0 = beat(6); // 11.957
+    const t0 = beat(9); // 24.990
     const line = $("#s6-line");
 
     // a headline se comprime em uma única linha
@@ -1009,31 +1014,31 @@
     const c1y = S5.base1 - S5.v1.capH / 2; // centro da linha 1 (após o deslocamento)
     const m2Top = parseFloat(gsap.getProperty(S5.m2, "top"));
     const c2y = m2Top + S5.pad + S5.v2.baseline - S5.v2.capH / 2;
-    tl.to([S5.top, S5.bottom], { opacity: 0, duration: 0.15, ease: "power1.in" }, t0);
+    tl.to([S5.top, S5.bottom], { opacity: 0, duration: 0.3, ease: "power1.inOut" }, t0);
     gridOut(t0);
-    tl.to(S5.m1, { y: "+=" + (540 - c1y) / sc, scaleY: 0.03, scaleX: 1.04, duration: 0.22, ease: "power3.in" }, t0);
-    tl.to(S5.m2, { y: (540 - c2y) / sc, scaleY: 0.03, scaleX: 1.04, duration: 0.22, ease: "power3.in" }, t0);
-    sfx("zip", t0 - 0.02, { dur: 0.32 });
+    tl.to(S5.m1, { y: "+=" + (540 - c1y) / sc, scaleY: 0.03, scaleX: 1.04, duration: 0.42, ease: "power2.in" }, t0);
+    tl.to(S5.m2, { y: (540 - c2y) / sc, scaleY: 0.03, scaleX: 1.04, duration: 0.42, ease: "power2.in" }, t0);
+    sfx("zip", t0, { dur: 0.45 });
 
-    const tL = t0 + 0.22;
+    const tL = t0 + 0.42;
     const lw = S5.w * 1.04 * sc;
     gsap.set(line, { xPercent: -50, yPercent: -50, width: lw, height: 6 });
     tl.set([S5.m1, S5.m2], { opacity: 0 }, tL);
     tl.set(line, { visibility: "visible" }, tL);
     // ...e vira um pequeno elemento gráfico de identidade
-    tl.to(line, { width: 150, height: 16, backgroundColor: C.blue, duration: 0.28, ease: "expo.inOut" }, tL);
-    sfx("blip", tL + 0.28, { f: 1400, len: 0.05, v: 0.9, pan: 0 });
+    tl.to(line, { width: 150, height: 16, backgroundColor: C.blue, duration: 0.5, ease: "power3.inOut" }, tL);
+    sfx("blip", tL + 0.45, { f: 1400, len: 0.05, v: 0.6, pan: 0 });
 
     // fundo branco expande a partir da marca
-    const tW = tL + 0.12;
+    const tW = tL + 0.22;
     const bx = (960 - 75) / W * 100;
     const by = (540 - 8) / H * 100;
-    wipe("#wipe-final", tW, 0.4, `inset(${by}% ${bx}% ${by}% ${bx}%)`);
-    inkTo(C.black, tW + 0.15);
-    bgSet(C.white, tW + 0.42);
-    tl.set("#wipe-final", { visibility: "hidden" }, tW + 0.43);
-    sfx("whoosh", tW, { dur: 0.45, f0: 300, f1: 2000, v: 0.5, pan0: 0, pan1: 0, rev: 0.3 });
-    tl.to(focus, { x: 960, y: 540, duration: 0.4 }, tW);
+    wipe("#wipe-final", tW, 0.8, `inset(${by}% ${bx}% ${by}% ${bx}%)`);
+    inkTo(C.black, tW + 0.3);
+    bgSet(C.white, tW + 0.82);
+    tl.set("#wipe-final", { visibility: "hidden" }, tW + 0.83);
+    sfx("whoosh", tW, { dur: 0.8, f0: 260, f1: 1600, v: 0.4, pan0: 0, pan1: 0, rev: 0.3, peak: 0.6 });
+    tl.to(focus, { x: 960, y: 540, duration: 0.6 }, tW);
 
     // VAMOS CRIAR / ALGO INCRÍVEL?
     const q1 = $("#q1");
@@ -1055,11 +1060,11 @@
     gsap.set([qc1, qc2], { yPercent: 115 });
 
     const qTop = 540 - total / 2;
-    tl.to(line, { y: qTop - 70, width: 120, height: 12, duration: 0.34, ease: "power3.inOut" }, tL + 0.3);
-    const tQ = tL + 0.26;
-    tl.to(qc1, { yPercent: 0, duration: 0.5, ease: "back.out(1.4)", stagger: 0.024 }, tQ);
-    tl.to(qc2, { yPercent: 0, duration: 0.5, ease: "back.out(1.4)", stagger: 0.024 }, tQ + 0.1);
-    sfx("whoosh", tQ - 0.04, { dur: 0.38, f0: 600, f1: 2400, v: 0.45, pan0: 0.2, pan1: -0.2 });
+    tl.to(line, { y: qTop - 70, width: 120, height: 12, duration: 0.55, ease: "power3.inOut" }, tL + 0.55);
+    const tQ = tL + 0.5;
+    tl.to(qc1, { yPercent: 0, duration: 0.75, ease: "back.out(1.12)", stagger: 0.03 }, tQ);
+    tl.to(qc2, { yPercent: 0, duration: 0.75, ease: "back.out(1.12)", stagger: 0.03 }, tQ + 0.15);
+    sfx("whoosh", tQ - 0.05, { dur: 0.7, f0: 500, f1: 1900, v: 0.35, pan0: 0.2, pan1: -0.2, peak: 0.6 });
 
     // assinatura
     const sig = $("#sig");
@@ -1081,20 +1086,21 @@
     const sigTop = brandCapCenter + vb.capH / 2 - vb.baseline;
     const barY = (sigTop + vb.baseline + sigTop + sub.offsetTop) / 2;
 
-    const tS = beat(9) - 0.34; // 13.05 — a câmera recua
-    tl.to("#q-group", { scale: 0.33, y: 262 - 540, duration: 0.56, ease: "expo.inOut" }, tS);
-    tl.to(line, { y: barY - 540, width: 96, height: 10, duration: 0.56, ease: "expo.inOut" }, tS);
-    tl.to(bChars, { yPercent: 0, duration: 0.55, ease: "expo.out", stagger: 0.024 }, tS + 0.24);
-    sfx("impact", beat(9), { size: 1.5, v: 1, f: 70, bright: 1400, rev: 1 });
-    tl.set([sub, btn, ig], { visibility: "visible" }, tS + 0.3);
-    tl.fromTo(sub, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, tS + 0.34);
-    tl.fromTo(btn, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, tS + 0.44);
-    tl.fromTo(ig, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, tS + 0.56);
-    tl.to(".sig-arr", { x: 4, y: -4, duration: 0.22, ease: "power2.inOut", yoyo: true, repeat: 1 }, 14.1);
-    tl.to("#s6", { scale: 0.975, duration: 1.4, ease: "power1.inOut" }, beat(9));
+    const tSig = beat(15); // 27.917 — chegada da assinatura
+    const tS = tSig - 0.67; // a câmera recua
+    tl.to("#q-group", { scale: 0.33, y: 262 - 540, duration: 0.95, ease: "power2.inOut" }, tS);
+    tl.to(line, { y: barY - 540, width: 96, height: 10, duration: 0.95, ease: "power2.inOut" }, tS);
+    tl.to(bChars, { yPercent: 0, duration: 0.7, ease: "power3.out", stagger: 0.03 }, tS + 0.32);
+    sfx("impact", tSig, { size: 1.4, v: 0.85, f: 68, bright: 1200, rev: 1 });
+    tl.set([sub, btn, ig], { visibility: "visible" }, tS + 0.45);
+    tl.fromTo(sub, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, tS + 0.55);
+    tl.fromTo(btn, { opacity: 0, scale: 0.94 }, { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.3)" }, tS + 0.7);
+    tl.fromTo(ig, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, tS + 0.85);
+    tl.to(".sig-arr", { x: 4, y: -4, duration: 0.3, ease: "power2.inOut", yoyo: true, repeat: 1 }, tSig + 0.85);
+    tl.to("#s6", { scale: 0.975, duration: DURATION - tSig, ease: "power1.inOut" }, tSig);
 
     // a tela fica preta somente nos últimos frames
-    tl.to("#fade", { opacity: 1, duration: 0.38, ease: "power2.in" }, DURATION - 0.38);
+    tl.to("#fade", { opacity: 1, duration: 0.45, ease: "power2.in" }, DURATION - 0.45);
     tl.set({}, {}, DURATION);
   }
 
@@ -1126,7 +1132,7 @@
     return {
       cues,
       duration: DURATION,
-      music: { beat: BEAT, anchor: ANCHOR, intro: 2.2 },
+      music: { beat: BEAT, anchor: ANCHOR, intro: 4.4, grooveFrom: -27, breakFrom: -14, wordsFrom: -12, outroAt: 9, finalAt: 15 },
       synthMusic: a.synthMusic !== false,
       sfxOn: a.sfx !== false,
       duckDb: a.narration && a.narration.duckMusicDb,
@@ -1243,9 +1249,9 @@
         p.media.narration.forEach((n) => {
           if (n.kind !== "element") return;
           if (n.cue <= 0.01) {
-            ((CFG.audio.narration && CFG.audio.narration.lines) || []).forEach((l) => media.duckSegments.push({ start: l.cue, end: l.cue + 1.7 }));
+            ((CFG.audio.narration && CFG.audio.narration.lines) || []).forEach((l) => media.duckSegments.push({ start: l.cue, end: l.cue + 2.2 }));
           } else {
-            media.duckSegments.push({ start: n.cue, end: n.cue + (isFinite(n.el.duration) ? n.el.duration : 1.7) });
+            media.duckSegments.push({ start: n.cue, end: n.cue + (isFinite(n.el.duration) ? n.el.duration : 2.2) });
           }
         });
       }
