@@ -1,0 +1,107 @@
+# SUA IDEIA. NOSSO CÓDIGO. — Showreel 15 s
+
+Motion design de 15 segundos (1920×1080, 16:9) em **HTML + CSS + JavaScript + GSAP**, para divulgar
+serviços de desenvolvimento web: sites, landing pages e sistemas.
+Estética Swiss / editorial, cores sólidas, tipografia gigante, interfaces desenhadas em HTML/SVG
+e sound design sincronizado.
+
+```
+00.0  A IDEIA ............ cursor, digitação, IDEIA. ocupa a tela, letras viram blocos
+02.0  IDEIA → DIGITAL .... blocos montam o site, DESIGN. desliza e vira CÓDIGO., que vira código e volta à interface
+04.0  EXPERIÊNCIA ........ câmera entra no navegador, cursor, microinterações, rolagem, desktop → tablet → smartphone, RESPONSIVO.
+05.8  O QUE EU DESENVOLVO  smartphone gira e vira o fundo azul; SITES. / LANDING PAGES. / SISTEMAS. com a interface dentro das letras
+09.1  SUA EMPRESA ........ composição 3D dos mockups, câmera recua, SUA EMPRESA. NO DIGITAL.
+12.0  ASSINATURA ......... headline vira uma linha → marca azul → fundo branco → VAMOS CRIAR ALGO INCRÍVEL? → assinatura → preto
+```
+
+## Rodar
+
+```bash
+npm start            # servidor local sem dependências → http://localhost:5173
+```
+
+Também funciona abrindo `index.html` direto no navegador (Chrome/Edge/Safari/Firefox recentes).
+Com o servidor local a sincronia de áudio é sample-accurate; via `file://` a narração usa `<audio>`.
+
+Tela inicial **CLIQUE PARA INICIAR** (necessária para liberar o áudio). Atalhos:
+`Espaço` pausar · `R` reiniciar · `M` mudo · `F` tela cheia. No fim aparece **ASSISTIR NOVAMENTE**.
+Os controles aparecem ao mover o mouse e somem sozinhos (útil para gravar a tela, se preferir).
+
+Para inspecionar um instante: `index.html?t=7.5` congela a timeline nesse tempo.
+
+## Personalizar
+
+Tudo em `js/config.js`:
+
+| Campo | Padrão | Uso |
+|---|---|---|
+| `brand` | `SEU NOME` | assinatura final (ajusta o tamanho sozinho) |
+| `instagram` | `@seu_instagram` | rodapé da assinatura |
+| `subtitle`, `ctaLabel`, `year` | — | textos da assinatura e da cena 5 |
+| `audio.*` | — | narração, trilha externa, volumes (veja `assets/audio/README.md`) |
+| `projects.*` | demos | screenshots reais (veja `assets/projects/README.md`) |
+
+Atalho sem editar código: `index.html?brand=Seu%20Nome&ig=@seuperfil`.
+
+## Exportar MP4 (Reels, portfólio, anúncios)
+
+```bash
+npm install
+npx playwright install chromium    # uma vez
+npm run render                     # dist/showreel-1920x1080-60fps.mp4 + capa .png
+npm run render:30                  # 30 fps
+npm run render:preview             # prévia 960×540
+node tools/render.mjs --query "&brand=Seu%20Nome&ig=@perfil"
+```
+
+Precisa do **ffmpeg** no PATH. A exportação é quadro a quadro (não é gravação de tela):
+cada frame é posicionado na timeline e capturado; o áudio é renderizado pelo mesmo motor
+com `OfflineAudioContext`. Resultado: 15,000 s, 900 frames a 60 fps, H.264 + AAC, ~5 MB,
+sem frames perdidos e com a mesma sincronia da versão ao vivo. Leva ~2 min.
+
+## Áudio
+
+- **Trilha e efeitos**: sintetizados com Web Audio API (126 BPM, drop em 9,10 s).
+  Teclado mecânico, cliques de interface, whooshes, sub-bass, impactos, riser, reverb.
+  Os cues de som são registrados pela própria timeline (`sfx(...)` ao lado de cada animação).
+- **Narração**: não incluída e **nunca simulada**. Coloque os arquivos em `assets/audio/`
+  (tabela de tempos e direção de voz em `assets/audio/README.md`). A tela inicial informa se
+  a narração foi encontrada. A trilha abaixa automaticamente enquanto a voz fala.
+- Mixagem atual (sem voz): −15,7 LUFS integrado, pico −1 dBTP.
+
+## Estrutura
+
+```
+index.html              palco 1920×1080, cenas, mockups (HTML/SVG), HUD, tela inicial
+css/showreel.css        paleta, tipografia, componentes e mockups
+js/config.js            personalização (marca, contato, áudio, projetos)
+js/showreel.js          timeline GSAP única + player sincronizado ao relógio de áudio
+js/audio.js             motor de áudio (síntese, mixagem, narração, render offline)
+tools/render.mjs        exportação MP4 determinística (Playwright + ffmpeg)
+tools/serve.mjs         servidor local
+assets/fonts/           Archivo Black, Space Grotesk, Inter, JetBrains Mono (locais, OFL)
+assets/vendor/          GSAP 3.13 (local, funciona offline)
+assets/audio/           narração / trilha opcionais
+assets/projects/        screenshots opcionais
+```
+
+## Notas técnicas
+
+- **Uma única `gsap.timeline()`** de 15 s. Nada anima fora dela (nem o cursor piscando),
+  por isso qualquer instante pode ser renderizado de forma idêntica.
+- **Relógio mestre = AudioContext**: a cada frame a timeline é posicionada no tempo do som
+  (descontando a latência de saída). Pausar suspende o áudio e a imagem junto, sem deriva.
+- **Sem cortes secos**: cada cena nasce da anterior (letras → blocos → interface → smartphone →
+  fundo azul → letras-janela → mockups 3D → headline → linha → marca → assinatura).
+- **Máscaras tipográficas** com `clipPath` SVG aplicado ao HTML dos mockups (zoom através da letra "I").
+- Animações em `transform`, `opacity` e `clip-path`; a compressão desktop → mobile anima a geometria
+  real dos componentes (o texto reflui de verdade). Medido ~60 fps em headless (p99 16,8 ms).
+- Tipografia gigante re-rasterizada a cada frame (`force3D: false`) para não borrar em escala.
+- Mockups são fictícios e sinalizados (DEMO, "dados de exemplo"). Sem clientes, depoimentos
+  ou números de resultado inventados.
+- "Neue Montreal" é comercial e não foi incluída; o par Archivo Black + Space Grotesk cobre o papel.
+
+## Licenças de terceiros
+
+- GSAP 3.13 — GreenSock Standard License (uso gratuito, inclusive comercial).
+- Archivo Black, Space Grotesk, Inter, JetBrains Mono — SIL Open Font License 1.1 (via @fontsource).
