@@ -18,6 +18,7 @@
      node tools/render.mjs --from 6 --to 9         # só um trecho
      node tools/render.mjs --query "&brand=Seu%20Nome&ig=@perfil"
      node tools/render.mjs --no-audio --out dist/mudo.mp4
+     node tools/render.mjs --fps 30 --crf 21 --abr 128k --maxrate 3M   # arquivo leve (WhatsApp)
    ========================================================================== */
 
 import fs from "node:fs";
@@ -46,6 +47,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fps = Number(args.fps) || 60;
 const scale = Number(args.scale) || 1;
 const crf = String(args.crf || 16);
+const abr = typeof args.abr === "string" ? args.abr : "320k";
+const maxrate = typeof args.maxrate === "string" ? args.maxrate : null;
 const from = Number(args.from) || 0;
 const withAudio = !args["no-audio"];
 const ffmpegBin = args.ffmpeg || process.env.FFMPEG || "ffmpeg";
@@ -108,7 +111,9 @@ try {
   if (scale !== 1) vf.push(`scale=${outW}:${outH}:flags=lanczos`);
   vf.push("format=yuv420p");
   ff.push("-vf", vf.join(","), "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-profile:v", "high", "-r", String(fps));
-  if (wavPath) ff.push("-c:a", "aac", "-b:a", "320k", "-ar", "48000");
+  // teto de bitrate opcional: mantém o arquivo pequeno sem perder a nitidez do texto
+  if (maxrate) ff.push("-maxrate", maxrate, "-bufsize", String(parseFloat(maxrate) * 2) + maxrate.replace(/[\d.]/g, ""));
+  if (wavPath) ff.push("-c:a", "aac", "-b:a", abr, "-ar", "48000");
   ff.push("-movflags", "+faststart", out);
 
   const enc = spawn(ffmpegBin, ff, { stdio: ["pipe", "inherit", "inherit"] });

@@ -147,7 +147,7 @@ window.ReelEngine = function (opts) {
         const lines = (CFG.audio && CFG.audio.narration && CFG.audio.narration.lines) || [];
         p.media.narration.forEach((n) => {
           if (n.kind !== "element") return;
-          if (n.cue <= 0.01) lines.forEach((l) => media.duckSegments.push({ start: l.cue, end: l.cue + 2.4 }));
+          if (n.cue <= 0.01) ShowreelAudio.speechSegments(lines).forEach((sg) => media.duckSegments.push(sg));
           else media.duckSegments.push({ start: n.cue, end: n.cue + (isFinite(n.el.duration) ? n.el.duration : 2.4) });
         });
       }
@@ -155,7 +155,7 @@ window.ReelEngine = function (opts) {
         media.music = null;
         plan.synthMusic = false;
       }
-      p.engine = new ShowreelAudio.Engine(p.ctx, { masterVolume: (CFG.audio && CFG.audio.masterVolume) || 0.9, destination: p.muteNode });
+      p.engine = new ShowreelAudio.Engine(p.ctx, { masterVolume: (CFG.audio && CFG.audio.masterVolume) || 0.9, inputGainDb: CFG.audio && CFG.audio.inputGainDb, destination: p.muteNode });
       p.t0 = p.ctx.currentTime + 0.12;
       p.engine.schedule(p.t0, plan, media);
       setTimeout(() => {
@@ -347,7 +347,8 @@ window.ReelEngine = function (opts) {
     ready.then(() => {
       ui.start.style.display = "none";
       player.state = "paused";
-      seek(parseFloat(PARAMS.get("t")) || 0);
+      player.pausedAt = parseFloat(PARAMS.get("t")) || 0; // Espaço continua deste ponto (sem som: modo de inspeção)
+      seek(player.pausedAt);
     });
   }
 

@@ -74,6 +74,10 @@ window.ShowreelAudio = (function () {
     this.limiter.attack.value = 0.002;
     this.limiter.release.value = 0.09;
 
+    // ganho de entrada antes da dinâmica: sobe o volume percebido sem passar do limitador
+    this.input = ctx.createGain();
+    this.input.gain.value = dbToGain(this.opts.inputGainDb || 0);
+    this.input.connect(this.comp);
     this.comp.connect(this.limiter);
     this.limiter.connect(this.out);
     this.out.connect(this.opts.destination || ctx.destination);
@@ -84,7 +88,7 @@ window.ShowreelAudio = (function () {
     this.revOut = ctx.createGain();
     this.revOut.gain.value = 0.55;
     this.reverb.connect(this.revOut);
-    this.revOut.connect(this.comp);
+    this.revOut.connect(this.input);
 
     // música: drums + synths → filtro (fechamento no final) → duck (narração)
     this.music = ctx.createGain();
@@ -95,7 +99,7 @@ window.ShowreelAudio = (function () {
     this.duck = ctx.createGain();
     this.music.connect(this.musicLP);
     this.musicLP.connect(this.duck);
-    this.duck.connect(this.comp);
+    this.duck.connect(this.input);
 
     this.drums = ctx.createGain();
     this.drums.gain.value = 0.9;
@@ -107,11 +111,11 @@ window.ShowreelAudio = (function () {
 
     this.sfx = ctx.createGain();
     this.sfx.gain.value = 0.95;
-    this.sfx.connect(this.comp);
+    this.sfx.connect(this.input);
 
     this.voice = ctx.createGain();
     this.voice.gain.value = 1;
-    this.voice.connect(this.comp);
+    this.voice.connect(this.input);
     this.voiceSend = ctx.createGain();
     this.voiceSend.gain.value = 0.08;
     this.voice.connect(this.voiceSend);
@@ -209,15 +213,15 @@ window.ShowreelAudio = (function () {
   };
 
   /* ---------- SYNTHS ---------- */
-  E.bass = function (t, note, dur, vel) {
-    var c = this.ctx, f = midi(note);
+  E.bass = function (t, note, dur, vel, opt) {
+    var c = this.ctx, f = midi(note), noSub = opt && opt.sub === false;
     var o1 = c.createOscillator(), o2 = c.createOscillator(), lp = this.filter("lowpass", 800, 5), g = c.createGain();
     o1.type = "sawtooth"; o1.frequency.value = f;
-    o2.type = "sine"; o2.frequency.value = f / 2;
+    o2.type = "sine"; o2.frequency.value = noSub ? f : f / 2;
     lp.frequency.setValueAtTime(950 * vel, t);
     lp.frequency.exponentialRampToValueAtTime(170, t + dur * 0.9);
     this.env(g.gain, t, 0.006, 0.26 * vel, dur * 0.5, 0.13 * vel, 0.05, t + dur * 0.85);
-    var og2 = c.createGain(); og2.gain.value = 0.9;
+    var og2 = c.createGain(); og2.gain.value = noSub ? 0.35 : 0.9;
     o1.connect(lp); o2.connect(og2); og2.connect(g); lp.connect(g); g.connect(this.synth);
     o1.start(t); o2.start(t); o1.stop(t + dur + 0.1); o2.stop(t + dur + 0.1);
   };
@@ -300,9 +304,14 @@ window.ShowreelAudio = (function () {
     this.env(g.gain, t, 0.001, 0.17 * v, 0.045);
     osc.connect(g); g.connect(this.sfx);
     osc.start(t); osc.stop(t + 0.06);
-    var n = this.noiseSrc(t, 0.006), hp = this.filter("highpass", 4200), ng = c.createGain();
-    this.env(ng.gain, t, 0.0005, 0.14 * v, 0.005);
-    n.connect(hp); hp.connect(ng); ng.connect(this.sfx);
+    var len = Math.max(32, Math.round(0.006 * c.sampleRate));
+    var nb = c.createBuffer(1, len, c.sampleRate), nd = nb.getChannelData(0);
+    var cr = this.clickRnd || (this.clickRnd = mulberry32(4242)); // PRNG próprio: não altera o resto da mixagem
+    for (var i = 0; i < len; i++) nd[i] = (cr() * 2 - 1) * Math.min(1, i / 24) * Math.exp(-i / (len * 0.3)) * 0.14 * v;
+    var n = c.createBufferSource(), hp = this.filter("highpass", 4200);
+    n.buffer = nb;
+    n.connect(hp); hp.connect(this.sfx);
+    n.start(t);
     this.send(g, 0.12);
   };
 
@@ -532,38 +541,42 @@ window.ShowreelAudio = (function () {
       { pad: [41, 48, 52, 55, 57], bass: 29 },   // Fmaj9
       { pad: [43, 50, 55, 57, 59], bass: 31 }    // G6sus
     ];
+    // "quiet": tira kick e baixo (respiro para a mensagem principal), mantém pulso leve
     var quiet = function (t) {
       return (m.quiet || []).some(function (q) { return t >= t0 + q[0] && t < t0 + q[1]; });
     };
+    // com finalAt, a progressão para ali e entra o acorde final (até o fim do vídeo)
+    var stop = m.finalAt != null ? Math.min(end, t0 + m.finalAt) : end;
     var i = 0;
-    for (var t = start; t < end - 0.05; t += bar * 2, i++) {
+    for (var t = start; t < stop - 0.05; t += bar * 2, i++) {
       var ch = prog[i % prog.length];
-      var len = Math.min(bar * 2, end - t);
-      this.pad(t, ch.pad, len, 0.06, 1300);
-      // baixo macio no tempo 1 de cada compasso
+      var len = Math.min(bar * 2, stop - t);
+      this.pad(t, ch.pad, len, 0.09, 1400);
+      // baixo macio no tempo 1 de cada compasso, uma oitava acima (audível no celular)
       for (var b = 0; b < 2; b++) {
         var tb = t + b * bar;
-        if (tb >= groove && tb < end - bar * 0.5 && !quiet(tb)) this.bass(tb, ch.bass, beat * 1.6, 0.42);
+        if (tb >= groove && tb < stop - bar * 0.5 && !quiet(tb)) this.bass(tb, ch.bass + 12, beat * 1.6, 0.42, { sub: false });
       }
       // arpejo em colcheias com notas do acorde
       for (var k = 0; k < 16; k++) {
         var tk = t + k * beat * 0.5;
-        if (tk < groove || tk >= end - 0.2) continue;
+        if (tk < groove || tk >= stop - 0.2) continue;
         var note = ch.pad[(k * 2 + (k >> 2)) % ch.pad.length] + 12;
-        this.pluck(tk, note, quiet(tk) ? 0.016 : 0.03, k % 2 ? 0.25 : -0.25);
+        this.pluck(tk, note, quiet(tk) ? 0.034 : 0.045, k % 2 ? 0.25 : -0.25);
       }
     }
     // percussão leve: kick nos tempos 1 e 3, rim no 2 e 4, chimbal nos contratempos
-    var percEnd = end - (m.outro || bar);
+    var percEnd = Math.min(end - (m.outro || bar), stop);
     for (var tp = groove; tp < percEnd; tp += beat) {
-      if (quiet(tp)) continue;
+      var q = quiet(tp);
       var n = Math.round((tp - groove) / beat) % 4;
-      if (n === 0 || n === 2) this.kick(tp, 0.32);
-      if (n === 1 || n === 3) this.rim(tp, 0.35);
-      this.hat(tp + beat / 2, 0.22, false);
+      if ((n === 0 || n === 2) && !q) this.kick(tp, 0.32);
+      if (n === 1 || n === 3) this.rim(tp, q ? 0.2 : 0.35);
+      this.hat(tp + beat / 2, q ? 0.13 : 0.22, false);
     }
     // acorde final, aberto e longo
-    this.pad(end - 0.1, [60, 64, 67, 71, 74], 2.2, 0.07, 1700);
+    if (m.finalAt != null) this.pad(stop, [48, 55, 60, 64, 67, 71, 74], Math.max(1.5, t0 + m.end + 0.5 - stop), 0.09, 1800);
+    else this.pad(end - 0.1, [60, 64, 67, 71, 74], 2.2, 0.07, 1700);
     // "chimes" nos momentos-chave
     (m.accents || []).forEach(function (a) {
       var ta = t0 + a;
@@ -625,7 +638,7 @@ window.ShowreelAudio = (function () {
     // fade final suave
     var endT = t0 + plan.duration;
     var vol = this.out.gain.value;
-    this.out.gain.setValueAtTime(vol, endT - 0.6);
+    this.out.gain.setValueAtTime(vol, endT - (plan.fadeOut || 0.6));
     this.out.gain.exponentialRampToValueAtTime(0.0001, endT);
   };
 
@@ -675,6 +688,16 @@ window.ShowreelAudio = (function () {
     });
   }
 
+  // fim estimado de cada fala: palavras / 2,5 por segundo + 0,5 s, sem invadir a próxima
+  function speechSegments(lines) {
+    return lines.map(function (l, i) {
+      var words = String(l.text || "").split(/\s+/).filter(Boolean).length || 5;
+      var end = l.cue + words / 2.5 + 0.5;
+      if (lines[i + 1]) end = Math.min(end, lines[i + 1].cue - 0.1);
+      return { start: l.cue, end: end };
+    });
+  }
+
   function loadMedia(ctx, cfg) {
     var a = cfg.audio || {};
     var n = a.narration || {};
@@ -686,7 +709,7 @@ window.ShowreelAudio = (function () {
         media.narrationMode = "single";
         media.narration = [Object.assign({ cue: 0, volume: n.volume, src: n.single }, s)];
         // segmentos aproximados de fala (para ducking) a partir dos cues configurados
-        media.narration[0].segments = (n.lines || []).map(function (l) { return { start: l.cue, end: l.cue + 2.2 }; });
+        media.narration[0].segments = speechSegments(n.lines || []);
         return;
       }
       return Promise.all((n.lines || []).map(function (l) {
@@ -736,7 +759,7 @@ window.ShowreelAudio = (function () {
     var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     var ctx = new OAC(2, Math.ceil(plan.duration * sampleRate), sampleRate);
     return loadMedia(ctx, cfg).then(function (media) {
-      var eng = new Engine(ctx, { masterVolume: (cfg.audio && cfg.audio.masterVolume) || 0.9 });
+      var eng = new Engine(ctx, { masterVolume: (cfg.audio && cfg.audio.masterVolume) || 0.9, inputGainDb: cfg.audio && cfg.audio.inputGainDb });
       eng.schedule(0, plan, media);
       return ctx.startRendering().then(function (buf) {
         return {
@@ -752,6 +775,7 @@ window.ShowreelAudio = (function () {
     Engine: Engine,
     loadMedia: loadMedia,
     renderOffline: renderOffline,
+    speechSegments: speechSegments,
     dbToGain: dbToGain
   };
 })();
