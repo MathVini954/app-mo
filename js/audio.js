@@ -520,13 +520,64 @@ window.ShowreelAudio = (function () {
     this.kick(b(OUT + 4), 0.25);
   };
 
+  /* ---------- TRILHA CALMA (tutoriais): pads, arpejo suave, percussão leve ---------- */
+  E.scheduleCalmMusic = function (t0, m) {
+    var self = this;
+    var beat = 60 / (m.bpm || 96), bar = beat * 4;
+    var start = t0 + (m.start || 0), end = t0 + m.end;
+    var groove = t0 + (m.groove != null ? m.groove : m.start || 0);
+    var prog = [
+      { pad: [48, 55, 59, 62, 64], bass: 36 },   // Cmaj9
+      { pad: [45, 52, 55, 59, 60], bass: 33 },   // Am9
+      { pad: [41, 48, 52, 55, 57], bass: 29 },   // Fmaj9
+      { pad: [43, 50, 55, 57, 59], bass: 31 }    // G6sus
+    ];
+    var quiet = function (t) {
+      return (m.quiet || []).some(function (q) { return t >= t0 + q[0] && t < t0 + q[1]; });
+    };
+    var i = 0;
+    for (var t = start; t < end - 0.05; t += bar * 2, i++) {
+      var ch = prog[i % prog.length];
+      var len = Math.min(bar * 2, end - t);
+      this.pad(t, ch.pad, len, 0.06, 1300);
+      // baixo macio no tempo 1 de cada compasso
+      for (var b = 0; b < 2; b++) {
+        var tb = t + b * bar;
+        if (tb >= groove && tb < end - bar * 0.5 && !quiet(tb)) this.bass(tb, ch.bass, beat * 1.6, 0.42);
+      }
+      // arpejo em colcheias com notas do acorde
+      for (var k = 0; k < 16; k++) {
+        var tk = t + k * beat * 0.5;
+        if (tk < groove || tk >= end - 0.2) continue;
+        var note = ch.pad[(k * 2 + (k >> 2)) % ch.pad.length] + 12;
+        this.pluck(tk, note, quiet(tk) ? 0.016 : 0.03, k % 2 ? 0.25 : -0.25);
+      }
+    }
+    // percussão leve: kick nos tempos 1 e 3, rim no 2 e 4, chimbal nos contratempos
+    var percEnd = end - (m.outro || bar);
+    for (var tp = groove; tp < percEnd; tp += beat) {
+      if (quiet(tp)) continue;
+      var n = Math.round((tp - groove) / beat) % 4;
+      if (n === 0 || n === 2) this.kick(tp, 0.32);
+      if (n === 1 || n === 3) this.rim(tp, 0.35);
+      this.hat(tp + beat / 2, 0.22, false);
+    }
+    // acorde final, aberto e longo
+    this.pad(end - 0.1, [60, 64, 67, 71, 74], 2.2, 0.07, 1700);
+    // "chimes" nos momentos-chave
+    (m.accents || []).forEach(function (a) {
+      var ta = t0 + a;
+      [76, 79, 83].forEach(function (nn, j) { self.pluck(ta + j * 0.07, nn, 0.05, j === 1 ? 0 : (j ? 0.35 : -0.35)); });
+    });
+  };
+
   /* ---------- agendamento completo ---------- */
   E.schedule = function (t0, plan, media) {
     var ctx = this.ctx, self = this;
     media = media || {};
 
     if (plan.sfxOn !== false) {
-      this.room(t0, plan.music && plan.music.intro ? plan.music.intro + 0.4 : 2.1);
+      if (!plan.music || plan.music.style !== "calm") this.room(t0, plan.music && plan.music.intro ? plan.music.intro + 0.4 : 2.1);
       plan.cues.forEach(function (c) {
         var fn = self[c.type];
         if (typeof fn === "function") fn.call(self, t0 + c.t, c);
@@ -541,7 +592,8 @@ window.ShowreelAudio = (function () {
       ms.connect(mg); mg.connect(this.music);
       ms.start(t0);
     } else if (plan.synthMusic !== false) {
-      this.scheduleMusic(t0, plan.music);
+      if (plan.music && plan.music.style === "calm") this.scheduleCalmMusic(t0, plan.music);
+      else this.scheduleMusic(t0, plan.music);
     }
 
     // narração (buffers decodificados = sincronia exata)

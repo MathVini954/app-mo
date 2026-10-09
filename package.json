@@ -2,13 +2,15 @@
   "name": "showreel-digital-experience",
   "version": "1.0.0",
   "private": true,
-  "description": "Showreel de 30 s em HTML + GSAP para divulgar serviços de desenvolvimento web (sites, landing pages e sistemas).",
+  "description": "Showreel de 30 s e tutorial vertical em HTML + GSAP, com exportação MP4 determinística.",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",
     "render": "node tools/render.mjs",
     "render:30": "node tools/render.mjs --fps 30",
-    "render:preview": "node tools/render.mjs --fps 30 --scale 0.5 --out dist/preview.mp4"
+    "render:preview": "node tools/render.mjs --fps 30 --scale 0.5 --out dist/preview.mp4",
+    "render:tutorial": "node tools/render.mjs --page tutorial/index.html",
+    "render:tutorial:preview": "node tools/render.mjs --page tutorial/index.html --fps 30 --scale 0.5 --out dist/tutorial-preview.mp4"
   },
   "devDependencies": {
     "playwright": "1.56.1"

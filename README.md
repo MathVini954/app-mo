@@ -88,6 +88,7 @@ assets/fonts/           Archivo Black, Space Grotesk, Inter, JetBrains Mono (loc
 assets/vendor/          GSAP 3.13 (local, funciona offline)
 assets/audio/           narração / trilha opcionais
 assets/projects/        screenshots opcionais
+tutorial/               tutorial vertical "Nova requisição" (index.html, css/, js/, audio/)
 ```
 
 ## Notas técnicas
@@ -105,6 +106,35 @@ assets/projects/        screenshots opcionais
 - Mockups são fictícios e sinalizados (DEMO, "dados de exemplo"). Sem clientes, depoimentos
   ou números de resultado inventados.
 - "Neue Montreal" é comercial e não foi incluída; o par Archivo Black + Space Grotesk cobre o papel.
+
+## Tutorial — Nova requisição (Rio Ave)
+
+Vídeo vertical de **55 s (1080×1920, 9:16)**, pensado para WhatsApp/celular, que ensina a fazer uma
+requisição de material no app Rio Ave. Fica em `tutorial/` e reaproveita o motor de áudio e a exportação.
+
+```
+00.0  ABERTURA ........... "Como fazer uma requisição" (o quadro 0 serve de capa no WhatsApp)
+03.7  PASSO 1 ............ Quem retira
+08.0  PASSO 2 ............ Insumos · filtro por tipo de serviço: Hidráulica → só material de hidráulica,
+                           depois Elétrica e Alvenaria · marcar itens · ajustar quantidade
+25.8  PASSO 3 ............ "E o serviço?" → "Não é mais obrigatório" → "Seu líder pode apropriar por você"
+                           (cartão Antes/Agora) → caminho opcional pela árvore da EAP
+42.2  PASSO 4 ............ Enviar agora ou juntar no lote → toque em Enviar → "Requisição enviada"
+48.9  RESUMO ............. os 4 passos + "Dúvidas? Fale com o seu líder." (termina no resumo, sem tela preta)
+```
+
+```bash
+npm start                         # → http://localhost:5173/tutorial/
+npm run render:tutorial           # dist/tutorial-requisicao-1080x1920-60fps.mp4 + capa .png
+npm run render:tutorial:preview   # prévia 540×960 a 30 fps
+```
+
+- Legendas grandes no topo: o vídeo funciona **no mudo**. A narração é opcional e nunca simulada
+  (veja `tutorial/audio/README.md` com as frases e os tempos).
+- `tutorial/index.html?t=31.5` congela num instante; `tutorial/js/tutorial.js` concentra roteiro,
+  dados fictícios dos insumos/EAP e a timeline.
+- O app é redesenhado em HTML/CSS a partir dos prints (não são imagens). **Os chips de filtro por
+  tipo de serviço são uma proposta de funcionalidade** — no app atual eles não existem.
 
 ## Licenças de terceiros
 

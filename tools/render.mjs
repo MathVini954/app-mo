@@ -2,7 +2,7 @@
 /* ==========================================================================
    EXPORTAÇÃO PARA MP4 — quadro a quadro, determinística
    --------------------------------------------------------------------------
-   Abre index.html?render=1 num Chromium headless (Playwright), posiciona a
+   Abre a página (?render=1) num Chromium headless (Playwright), posiciona a
    timeline GSAP em cada frame exato, captura o PNG e envia ao ffmpeg.
    O áudio (trilha + efeitos sintetizados + narração, se existir) é renderizado
    com OfflineAudioContext pelo mesmo motor usado no navegador: a sincronia do
@@ -11,9 +11,10 @@
    Requisitos: Node 18+, `npm install`, `npx playwright install chromium`, ffmpeg.
 
    Uso:
-     node tools/render.mjs                         # 1920×1080, 60 fps
+     node tools/render.mjs                         # showreel 1920×1080, 60 fps
+     node tools/render.mjs --page tutorial/index.html   # tutorial 1080×1920
      node tools/render.mjs --fps 30                # 30 fps (arquivo menor)
-     node tools/render.mjs --scale 0.5 --fps 30    # prévia rápida 960×540
+     node tools/render.mjs --scale 0.5 --fps 30    # prévia rápida (metade da resolução)
      node tools/render.mjs --from 6 --to 9         # só um trecho
      node tools/render.mjs --query "&brand=Seu%20Nome&ig=@perfil"
      node tools/render.mjs --no-audio --out dist/mudo.mp4
@@ -49,8 +50,7 @@ const from = Number(args.from) || 0;
 const withAudio = !args["no-audio"];
 const ffmpegBin = args.ffmpeg || process.env.FFMPEG || "ffmpeg";
 const query = typeof args.query === "string" ? args.query : "";
-const outW = Math.round((1920 * scale) / 2) * 2;
-const out = path.resolve(root, args.out || `dist/showreel-${outW}x${Math.round((outW * 9) / 32) * 2}-${fps}fps.mp4`);
+const pagePath = typeof args.page === "string" ? args.page.replace(/^\/+/, "") : "index.html";
 
 if (spawnSync(ffmpegBin, ["-version"]).status !== 0) {
   console.error(`ffmpeg não encontrado ("${ffmpegBin}"). Instale o ffmpeg ou informe --ffmpeg /caminho/ffmpeg.`);
@@ -76,16 +76,27 @@ const cleanup = async () => {
 };
 
 try {
-  await page.goto(`http://127.0.0.1:${port}/index.html?render=1${query}`);
+  await page.goto(`http://127.0.0.1:${port}/${pagePath}?render=1${query}`);
   await page.evaluate(() => window.SHOWREEL.ready);
-  const duration = await page.evaluate(() => window.SHOWREEL.duration);
+  const info = await page.evaluate(() => ({
+    duration: window.SHOWREEL.duration,
+    width: window.SHOWREEL.width || 1920,
+    height: window.SHOWREEL.height || 1080,
+    name: window.SHOWREEL.name || "showreel",
+    poster: window.SHOWREEL.posterTime
+  }));
+  const duration = info.duration;
+  if (info.width !== 1920 || info.height !== 1080) await page.setViewportSize({ width: info.width, height: info.height });
+  const outW = Math.round((info.width * scale) / 2) * 2;
+  const outH = Math.round((info.height * scale) / 2) * 2;
+  const out = path.resolve(root, args.out || `dist/${info.name}-${outW}x${outH}-${fps}fps.mp4`);
   const end = args.to != null ? Math.min(duration, Number(args.to)) : duration;
   const frames = Math.round((end - from) * fps);
 
   let wavPath = null;
   if (withAudio) {
     const r = await page.evaluate(() => window.SHOWREEL.renderAudio());
-    wavPath = path.join(os.tmpdir(), `showreel-${process.pid}.wav`);
+    wavPath = path.join(os.tmpdir(), `${info.name}-${process.pid}.wav`);
     fs.writeFileSync(wavPath, Buffer.from(r.wavBase64, "base64"));
     console.log(`Áudio  · trilha: ${r.music} · narração: ${r.narration || "nenhum arquivo (vídeo sai sem voz)"}`);
   }
@@ -94,7 +105,7 @@ try {
   const ff = ["-y", "-hide_banner", "-loglevel", "error", "-f", "image2pipe", "-framerate", String(fps), "-i", "-"];
   if (wavPath) ff.push("-ss", String(from), "-t", String(end - from), "-i", wavPath);
   const vf = [];
-  if (scale !== 1) vf.push(`scale=${outW}:-2:flags=lanczos`);
+  if (scale !== 1) vf.push(`scale=${outW}:${outH}:flags=lanczos`);
   vf.push("format=yuv420p");
   ff.push("-vf", vf.join(","), "-c:v", "libx264", "-preset", "slow", "-crf", crf, "-profile:v", "high", "-r", String(fps));
   if (wavPath) ff.push("-c:a", "aac", "-b:a", "320k", "-ar", "48000");
@@ -119,10 +130,10 @@ try {
   if (wavPath) fs.rmSync(wavPath, { force: true });
   if (code !== 0) throw new Error(`ffmpeg terminou com código ${code}`);
 
-  // capa (frame da assinatura) para usar como thumbnail no Instagram/portfólio
+  // capa (frame final) para usar como thumbnail no Instagram/portfólio/WhatsApp
   if (!args["no-poster"]) {
     const poster = out.replace(/\.mp4$/i, "") + "-capa.png";
-    await page.evaluate((t) => window.SHOWREEL.seek(t), duration - 1);
+    await page.evaluate((t) => window.SHOWREEL.seek(t), info.poster != null ? info.poster : duration - 1);
     await page.screenshot({ path: poster, type: "png" });
     console.log(`Capa   · ${path.relative(root, poster)}`);
   }
