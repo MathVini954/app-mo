@@ -118,7 +118,7 @@ requisição de material no app Rio Ave. Fica em `tutorial/` e reaproveita o mot
 08.3  PASSO 2 ............ Insumos · NOVO filtro por tipo de serviço: Hidráulica → só hidráulica (etiqueta em
                            cada item, lista rola até tubos e registros) → Elétrica → Alvenaria · marcar · quantidade
 27.0  PASSO 3 ............ "Não é mais obrigatório" (~4 s) → "Seu líder pode apropriar por você" (cartão
-                           Serviço: Obrigatório → Opcional · Você envia → Seu líder apropria depois) → EAP opcional
+                           Serviço: Obrigatório → Opcional · Você envia → Seu líder pode apropriar depois) → EAP opcional
 43.6  PASSO 4 ............ Enviar agora ou juntar no lote → toque em Enviar → "Requisição enviada"
 50.6  RESUMO ............. os 4 passos + "Dúvidas? Fale com o seu líder." (termina no resumo, sem tela preta)
 ```
@@ -137,7 +137,10 @@ npm run render:tutorial:preview    # prévia 540×960 a 30 fps
 - `tutorial/index.html?t=31.5` congela num instante (Espaço continua dali, sem som); `tutorial/js/tutorial.js`
   concentra roteiro, dados fictícios dos insumos/EAP e a timeline.
 - O app é redesenhado em HTML/CSS a partir dos prints (não são imagens). **Os chips de filtro por
-  tipo de serviço e as etiquetas nos itens são uma proposta de funcionalidade** — no app atual eles não existem.
+  tipo de serviço, as etiquetas nos itens e o contador "12 de 129 · Hidráulica" são uma proposta de
+  funcionalidade** — no app atual eles não existem (o cabeçalho real mostra "129 no estoque").
+  **Só distribua o vídeo para as equipes depois que o filtro estiver no app**: quem seguir o tutorial
+  em campo vai procurar os chips.
 
 ## Licenças de terceiros
 

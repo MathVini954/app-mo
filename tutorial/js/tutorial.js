@@ -103,14 +103,14 @@
      ------------------------------------------------------------------------ */
   const NARR = [
     { cue: 3.9, text: "Primeiro, confira quem vai retirar o material." },
-    { cue: 8.4, text: "Depois, escolha os insumos." },
-    { cue: 10.6, text: "Novidade: filtro por tipo de serviço." },
+    { cue: 8.2, text: "Depois, escolha os insumos." },
+    { cue: 10.2, text: "Novidade: filtro por tipo de serviço." },
     { cue: 13.0, text: "Hidráulica? Só aparece hidráulica." },
     { cue: 15.1, text: "E assim por diante." },
     { cue: 18.3, text: "Marque o que vai usar e toque em Concluir." },
     { cue: 23.0, text: "Ajuste a quantidade, se precisar." },
     { cue: 27.0, text: "E o serviço? Não é mais obrigatório." },
-    { cue: 31.5, text: "Seu líder pode apropriar por você. Ele indica o serviço depois." },
+    { cue: 31.5, text: "Seu líder pode apropriar por você. Ele pode indicar o serviço depois." },
     { cue: 37.4, text: "Se souber o serviço, é só escolher na árvore da EAP." },
     { cue: 43.9, text: "Por fim, envie agora ou junte no lote." },
     { cue: 48.3, text: "Pronto, requisição enviada." },
@@ -323,18 +323,23 @@
     let lastTap = null;
     const tapAt = (x, y, t, o) => {
       o = o || {};
+      // sobre botões e rótulos o núcleo fica mais claro (o texto continua legível)
+      const coreBg = o.light ? "rgba(17, 18, 20, 0.1)" : "rgba(17, 18, 20, 0.28)";
       if (o.move && lastTap) {
         tl.to(tapEl, { left: x, top: y, duration: o.moveD || 0.45, ease: "power2.inOut" }, t - (o.moveD || 0.45) - 0.05);
+        tl.to(core, { backgroundColor: coreBg, duration: 0.2 }, t - 0.25);
       } else {
         const lead = o.label ? 0.8 : 0.35; // com balão "Toque aqui", o dedo aparece antes
         tl.set(tapEl, { left: x, top: y }, t - lead);
+        tl.set(core, { backgroundColor: coreBg }, t - lead);
         tl.fromTo(tapEl, { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out", immediateRender: false }, t - lead);
       }
+      let lb = null;
       tl.to(core, { scale: 0.8, duration: 0.09, ease: "power2.in" }, t - 0.04);
       tl.to(core, { scale: 1, duration: 0.25, ease: "power2.out" }, t + 0.06);
       tl.fromTo(ring, { scale: 0.4, opacity: 0.95 }, { scale: 1.9, opacity: 0, duration: 0.6, ease: "power2.out", immediateRender: false }, t);
       if (o.label) {
-        const lb = document.createElement("div");
+        lb = document.createElement("div");
         lb.className = "tap-label";
         lb.textContent = o.label;
         $("#callouts").appendChild(lb);
@@ -343,9 +348,12 @@
         gsap.set(lb, { left: flip ? x - 14 - lb.offsetWidth : x + 14, top: o.below ? y + 26 : y - 54 });
         if (o.below) lb.classList.add("below");
         tl.fromTo(lb, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", immediateRender: false }, t - 0.75);
-        tl.to(lb, { opacity: 0, duration: 0.3, ease: "power2.in" }, t + 0.25);
+        if (o.cut == null) tl.to(lb, { opacity: 0, duration: 0.3, ease: "power2.in" }, t + 0.25);
       }
-      if (!o.stay) tl.to(tapEl, { opacity: 0, duration: 0.35, ease: "power2.in" }, t + (o.hold || 0.35));
+      if (o.cut != null) {
+        // a tela vai mudar (folha subindo/descendo): dedo e balão saem antes, não apontam para o lugar errado
+        tl.to(lb ? [tapEl, lb] : tapEl, { opacity: 0, duration: 0.12, ease: "power1.in" }, o.cut - 0.12);
+      } else if (!o.stay) tl.to(tapEl, { opacity: 0, duration: 0.35, ease: "power2.in" }, t + (o.hold || 0.35));
       lastTap = o.stay ? { x, y } : null;
       sfx("click", t, { v: o.v || 0.55 });
     };
@@ -445,7 +453,7 @@
       sfx("tick", t + 0.05, { f: 2600, v: 1.4 });
     };
     // toque no ícone do chip (o dedo não cobre o nome do filtro)
-    const chipTap = (k, scroll) => ({ x: M.chip[k].x - (scroll || 0) + 17, y: M.chip[k].y + M.chip[k].h / 2 });
+    const chipTap = (k, scroll) => ({ x: M.chip[k].x - (scroll || 0) + 12, y: M.chip[k].y + M.chip[k].h / 2 });
 
     /* ---------------- estados iniciais ---------------- */
     gsap.set(cam, { x: OVER.x, y: OVER.y + 1500, scale: OVER.scale });
@@ -501,7 +509,7 @@
     stepOn(1, 8.1);
     camTo(focusOn(M.sec2, 10, 2.6), 8.1, 1.1);
     spotTo(M.tileIns, 8.6, { pad: 4, radius: 14 });
-    tapAt(M.tileIns.x + 40, M.tileIns.y + M.tileIns.h / 2, 9.55, { label: "Toque aqui" });
+    tapAt(M.tileIns.x + 40, M.tileIns.y + M.tileIns.h / 2, 9.55, { label: "Toque aqui", cut: 9.75 });
     spotOff(9.7, 0.3);
     // a folha de insumos sobe; a câmera enquadra a parte de cima da tela
     tl.to(insSheet, { yPercent: 0, duration: 0.8, ease: "power3.out" }, 9.75);
@@ -510,27 +518,31 @@
     camTo(focusOn(sheetTop, 0, 2.6), 9.85, 1.1);
 
     // NOVO: filtro por tipo de serviço — a fileira de chips fica em foco ~1 s antes do toque
-    const c3 = caption({ kicker: "Novo", kcls: "new", title: "Filtre por|<em>tipo de serviço</em>", sub: "<b>Hidráulica?</b> Só material de hidráulica." });
+    const c3 = caption({ kicker: "Novo", kcls: "new", title: "Filtre por|<em>tipo de serviço</em>", sub: "<span class=\"s0\"><b>Hidráulica?</b> Só material de hidráulica.</span><span class=\"s1\"><b>Elétrica, Alvenaria…</b> e assim por diante.</span>" });
     capSwap(c2, c3, 10.3);
     spotTo(M.chips, 10.9, { pad: 2, radius: 16 });
     const TH = 12.0;
     const hTap = chipTap("hid");
-    tapAt(hTap.x, hTap.y, TH, { hold: 0.4, label: "Toque aqui" });
+    tapAt(hTap.x, hTap.y, TH, { hold: 0.4, label: "Toque aqui", light: true });
     chipSelect("all", "hid", TH + 0.05);
     spotOff(TH + 0.3, 0.4);
     const hidIds = byCat("hid");
     layoutRows(hidIds, TH + 0.15, false, hidIds.length);
     // cada linha ganha a etiqueta do tipo e a lista rola até tubos, registros, tês…
     tl.to(rowTags, { opacity: 1, duration: 0.4, ease: "power2.out" }, TH + 0.6);
-    const hidScroll = Math.max(0, hidIds.length * ROW_H - M.list.h + 6);
+    // linhas inteiras: a câmera mostra ~7 linhas; rola até TUBO ficar no quadro
+    const hidScroll = Math.max(0, hidIds.length - 7) * ROW_H;
     tl.to("#ins-rows", { y: -hidScroll, duration: 0.9, ease: "power2.inOut" }, TH + 1.2);
 
     // e assim por diante: Elétrica, Alvenaria… (a fileira rola até o último tipo)
-    const c4 = caption({ kicker: "Novo", kcls: "new", title: "E assim|<em>por diante</em>", sub: "Elétrica, Alvenaria e outros tipos." });
-    capSwap(c3, c4, TH + 2.6);
     const TE = TH + 3.1;
+    const s0 = $(".s0", c3.el);
+    const s1 = $(".s1", c3.el);
+    gsap.set(s1, { opacity: 0 });
+    tl.to(s0, { opacity: 0, y: -8, duration: 0.3, ease: "power2.in" }, TE - 0.6);
+    tl.fromTo(s1, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out", immediateRender: false }, TE - 0.3);
     const eTap = chipTap("ele");
-    tapAt(eTap.x, eTap.y, TE, { hold: 0.35 });
+    tapAt(eTap.x, eTap.y, TE, { hold: 0.35, light: true });
     chipSelect("hid", "ele", TE + 0.05);
     tl.to("#ins-rows", { y: 0, duration: 0.5, ease: "power2.inOut" }, TE + 0.1);
     layoutRows(byCat("ele"), TE + 0.15);
@@ -538,14 +550,14 @@
     tl.to(chipsEl.children, { x: -chipScroll, duration: 0.7, ease: "power2.inOut" }, TE + 0.7);
     const TA = TE + 1.5;
     const aTap = chipTap("alv", chipScroll);
-    tapAt(aTap.x, aTap.y, TA, { hold: 0.35 });
+    tapAt(aTap.x, aTap.y, TA, { hold: 0.35, light: true });
     chipSelect("ele", "alv", TA + 0.05);
     layoutRows(byCat("alv"), TA + 0.15);
 
     // seleção
     const A = 0.5; // deslocamento do restante do passo 2 em relação ao roteiro base
     const c5 = caption({ kicker: "Passo 2", title: "Marque o que|<em>vai usar</em>", sub: "Depois, toque em <b>Concluir</b>." });
-    capSwap(c4, c5, 17.3 + A);
+    capSwap(c3, c5, 17.3 + A);
     const alvIds = byCat("alv");
     const LIST_SCROLL = 150;
     const rowY = (id, sc) => M.list.y + alvIds.indexOf(id) * ROW_H + ROW_H / 2 - (sc || 0);
@@ -559,7 +571,7 @@
     });
     // Concluir (o dedo desliza do último item até o botão)
     tl.to("#ins-ok", { backgroundColor: "#3364e0", color: "#ffffff", duration: 0.3 }, 20.0 + A);
-    tapAt(M.insOk.x + M.insOk.w / 2, M.insOk.y + M.insOk.h / 2, 20.6 + A, { move: true, moveD: 0.45 });
+    tapAt(M.insOk.x + M.insOk.w / 2, M.insOk.y + M.insOk.h / 2, 20.6 + A, { move: true, moveD: 0.45, light: true, cut: 20.8 + A });
     tl.to(insSheet, { yPercent: 102, duration: 0.75, ease: "power3.inOut" }, 20.8 + A);
     sfx("whoosh", 20.8 + A, { dur: 0.7, f0: 1200, f1: 300, v: 0.28, pan0: 0, pan1: 0, peak: 0.4 });
 
@@ -593,7 +605,8 @@
     tl.to("#lote", { backgroundColor: "#eaeffc", color: "#3364e0", duration: 0.4 }, 24.6 + A);
     tl.to("#send", { backgroundColor: "#3364e0", duration: 0.4 }, 24.6 + A);
     sfx("blip", 24.5 + A, { f: 1800, len: 0.05, v: 2.0, pan: 0 });
-    callout("Já dá para <b>enviar</b>", 18, M.bbar.y - 46, 24.7 + A, 1.6, "blue");
+    // balão logo acima de Enviar (fora do cartão do serviço)
+    callout("Já dá para <b>enviar</b>", M.send.x + M.send.w - 120, M.send.y - 40, 24.45 + A, 1.9, "blue");
 
     /* ====================================================================
        3 — SERVIÇO: NÃO É MAIS OBRIGATÓRIO. SEU LÍDER PODE APROPRIAR POR VOCÊ
@@ -609,7 +622,7 @@
     camTo(focusOn(sec3, 10, 2.7, SBOX), 25.9 + A, 1.2);
 
     // a mensagem principal entra direto e fica ~4 s: ênfase em "Não é mais"
-    const c8 = caption({ kicker: "Passo 3 · Serviço", kcls: "ok", title: "<em class=\"ul\">Não é mais<i class=\"uline\"></i></em>|obrigatório", sub: "Dá para enviar sem escolher." });
+    const c8 = caption({ kicker: "Passo 3 · Serviço", kcls: "ok", title: "<em class=\"ul\">Não é mais<i class=\"uline\"></i></em>|obrigatório", sub: "Dá para enviar sem escolher o serviço." });
     const t3 = 26.0 + A;
     capSwap(c6, c8, t3);
     stepOn(2, t3 + 0.2);
@@ -627,14 +640,12 @@
     const ldNew = $(".ld-new", leader);
     const ldArrow = $(".ld-arrow", leader);
     const ldNodes = $$(".ld-node", leader);
-    const ldTag = $(".ld-tag", leader);
     const ldStrike = $(".ld-strike", leader);
     gsap.set(ldArrow, { scaleX: 0 });
     gsap.set([ldBa, ...ldNodes], { opacity: 0, y: 16 });
     gsap.set(ldNew, { opacity: 0, scale: 0.9 });
     gsap.set(ldStrike, { scaleX: 0 });
-    gsap.set(ldTag, { opacity: 0, y: 14 });
-    const c9 = caption({ kicker: "Novo", kcls: "new", title: "Seu líder pode|<em>apropriar por você</em>", sub: "Ele indica o serviço depois." });
+    const c9 = caption({ kicker: "Novo", kcls: "new", title: "Seu líder pode|<em>apropriar por você</em>", sub: "Ele pode indicar o serviço depois." });
     const tL = t3 + 4.8;
     capSwap(c8, c9, tL);
     tl.set(leader, { visibility: "visible" }, tL + 0.1);
@@ -645,25 +656,25 @@
     tl.to(ldNodes[0], { opacity: 1, y: 0, duration: 0.5 }, tL + 1.2);
     tl.to(ldArrow, { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, tL + 1.45);
     tl.to(ldNodes[1], { opacity: 1, y: 0, duration: 0.5 }, tL + 1.95);
-    tl.to(ldTag, { opacity: 1, y: 0, duration: 0.6 }, tL + 2.4);
     sfx("whoosh", tL + 1.45, { dur: 0.8, f0: 400, f1: 1600, v: 0.25, pan0: -0.5, pan1: 0.5, peak: 0.6 });
     sfx("blip", tL + 0.87, { f: 1500, len: 0.05, v: 2.0, pan: 0 });
     const tOut = tL + 5.6; // o cartão completo fica ~3 s legível
-    tl.to(leader, { opacity: 0, y: 30, duration: 0.6, ease: "power2.in" }, tOut);
-    tl.set(leader, { visibility: "hidden" }, tOut + 0.65);
-    spotOff(tOut);
-    stepOpt(2, tOut);
+    tl.to(leader, { opacity: 0, y: -40, scale: 0.97, duration: 0.25, ease: "power2.in" }, tOut);
+    tl.set(leader, { visibility: "hidden" }, tOut + 0.3);
+    spotOff(tOut + 0.2);
+    stepOpt(2, tOut + 0.2);
+    tl.to("#opc", { backgroundColor: "#efeff0", color: "#828282", duration: 0.4 }, tOut + 0.2);
 
     // caminho opcional: escolher na árvore da EAP (tudo a partir daqui desloca X s)
     const X = tOut + 0.1 - 33.5;
     const c10 = caption({ kicker: "Opcional", kcls: "ok", title: "Sabe o serviço?|<em>Escolha na EAP</em>", sub: "Toque nas pastas até achar o serviço." });
     capSwap(c9, c10, 33.5 + X);
     camTo(focusOn(tileSvc, 10, 2.6), 33.6 + X, 1.0);
-    tapAt(tileSvc.x + 40, tileSvc.y + tileSvc.h / 2, 34.75 + X);
+    tapAt(tileSvc.x + 40, tileSvc.y + tileSvc.h / 2, 34.75 + X, { cut: 34.9 + X });
     tl.to("#scrim", { opacity: 0.45, duration: 0.5 }, 34.9 + X);
     tl.to(eapSheet, { yPercent: 0, duration: 0.8, ease: "power3.out" }, 34.9 + X);
     sfx("whoosh", 34.9 + X, { dur: 0.7, f0: 300, f1: 1400, v: 0.28, pan0: 0, pan1: 0, peak: 0.5 });
-    camTo(focusOn({ x: 0, y: 56, w: 360, h: 470 }, 0, 2.6), 35.0 + X, 1.0);
+    camTo(focusOn({ x: 0, y: 56, w: 360, h: 470 }, 0, 2.6), 34.9 + X, 0.8, "power3.out");
     // cabeçalhos trocam em sequência (sem sobreposição de textos)
     const headSwap = (a, b, t) => {
       tl.to(a, { opacity: 0, x: -24, duration: 0.25, ease: "power2.in" }, t);
@@ -685,7 +696,7 @@
     tapAt(M.eapRow3.x + 40, M.eapRow3.y + M.eapRow3.h / 2, 38.45 + X, { stay: true });
     tl.to(eap3[0], { backgroundColor: "#eaeffc", duration: 0.25 }, 38.45 + X);
     tl.to($(".concluir", head2), { backgroundColor: "#3364e0", color: "#ffffff", duration: 0.3 }, 38.6 + X);
-    tapAt(M.eapOk.x + M.eapOk.w / 2, M.eapOk.y + M.eapOk.h / 2, 39.1 + X, { move: true, moveD: 0.4 });
+    tapAt(M.eapOk.x + M.eapOk.w / 2, M.eapOk.y + M.eapOk.h / 2, 39.1 + X, { move: true, moveD: 0.4, light: true, cut: 39.3 + X });
     tl.to(eapSheet, { yPercent: 102, duration: 0.7, ease: "power3.inOut" }, 39.3 + X);
     sfx("whoosh", 39.3 + X, { dur: 0.7, f0: 1200, f1: 300, v: 0.28, pan0: 0, pan1: 0, peak: 0.4 });
     tl.to("#scrim", { opacity: 0, duration: 0.5 }, 39.4 + X);
@@ -699,6 +710,7 @@
     tl.fromTo(svcNew, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, immediateRender: false }, 39.7 + X);
     tl.to("#b3 .ck", { opacity: 1, duration: 0.3 }, 39.7 + X);
     tl.to("#b3", { backgroundColor: "#30d158", color: "#ffffff", duration: 0.3 }, 39.7 + X);
+    stepDone(2, 39.7 + X);
     camTo(focusOn(tileSvc, 30, 2.4), 39.3 + X, 0.9);
 
     /* ====================================================================
@@ -710,11 +722,10 @@
     stepOn(3, t4 + 0.2);
     camTo(focusOn({ x: 150, y: M.bbar.y - 120, w: 210, h: M.bbar.h + 120 }, 0, 2.7), t4 + 0.1, 1.1);
     spotTo({ x: M.lote.x, y: M.lote.y, w: M.send.x + M.send.w - M.lote.x, h: M.lote.h }, t4 + 0.9, { pad: 5, radius: 12 });
-    callout("<b>Ao lote:</b> junta com outras requisições", M.lote.x - 150, M.lote.y - 104, t4 + 1.3, 1.8);
-    callout("<b>Enviar:</b> manda agora", M.send.x - 40, M.send.y - 52, t4 + 1.8, 1.3, "blue");
+    callout("<b>Ao lote:</b> junta com outras requisições<br><b>Enviar:</b> manda agora", M.send.x + M.send.w - 230, M.lote.y - 56, t4 + 0.9, 2.4);
     spotOff(t4 + 3.4, 0.3);
     const tSend = t4 + 4.3;
-    tapAt(M.send.x + M.send.w * 0.8, M.send.y + M.send.h / 2, tSend, { label: "Toque aqui" });
+    tapAt(M.send.x + M.send.w * 0.8, M.send.y + M.send.h / 2, tSend, { label: "Toque aqui", light: true });
     tl.to("#send", { scale: 0.94, duration: 0.08, ease: "power2.in" }, tSend - 0.03);
     tl.to("#send", { scale: 1, duration: 0.35, ease: "back.out(2)" }, tSend + 0.07);
     camTo(OVER, tSend + 0.25, 1.2);
