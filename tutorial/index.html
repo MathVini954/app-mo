@@ -83,13 +83,20 @@
 
           <!-- Folha: Insumos (com o novo filtro por tipo de serviço) -->
           <div class="sheet" id="sh-insumos">
-            <div class="sh-head">
-              <div class="sh-tt"><b>Insumos</b><span class="sh-cnt"><span id="ins-c0">129 no estoque</span><span id="ins-c1"></span></span></div>
-              <div class="concluir" id="ins-ok">Concluir</div>
+            <!-- tela 1 do modal: lista de insumos -->
+            <div class="pg" id="ins-p1">
+              <div class="sh-head">
+                <div class="sh-tt"><b>Insumos</b><span class="sh-cnt"><span id="ins-c0">129 no estoque</span><span id="ins-c1"></span></span></div>
+                <div class="concluir" id="ins-ok">Concluir</div>
+              </div>
+              <div class="search"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>Buscar insumo por nome ou código</div>
+              <div class="chips" id="chips"></div>
+              <div class="list" id="ins-list"><div class="rows" id="ins-rows"></div></div>
             </div>
-            <div class="search"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>Buscar insumo por nome ou código</div>
-            <div class="chips" id="chips"></div>
-            <div class="list" id="ins-list"><div class="rows" id="ins-rows"></div></div>
+            <!-- tela 2 do modal: quantidade de um insumo (uma por item, preenchidas pelo script) -->
+            <div id="qpages"></div>
+            <!-- teclado numérico do celular -->
+            <div class="kpad" id="kpad"></div>
           </div>
 
           <!-- Folha: Serviços da EAP -->

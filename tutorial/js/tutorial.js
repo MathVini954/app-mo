@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TUTORIAL — NOVA REQUISIÇÃO (1080×1920, 57 s)
+   TUTORIAL — NOVA REQUISIÇÃO (1080×1920, ~1 min)
    Uma timeline GSAP. Câmera sobre uma réplica do app; toques, foco e
    legendas grandes (funciona sem som). Destaques pedidos:
    - Insumos: NOVO filtro por tipo de serviço (Hidráulica → só hidráulica…)
@@ -12,7 +12,27 @@
   const CFG = window.SHOWREEL_CONFIG;
   const W = 1080;
   const H = 1920;
-  const DURATION = 57;
+  // ROTEIRO: cada bloco começa onde o anterior termina (ajuste aqui o ritmo)
+  const T = {};
+  T.s1 = 3.7;                 // passo 1 · quem retira
+  T.s2 = T.s1 + 4.1;          // passo 2 · insumos
+  T.th = T.s2 + 4.2;          // toque em Hidráulica
+  T.te = T.th + 3.1;          // Elétrica
+  T.ta = T.te + 1.5;          // Alvenaria
+  T.ts = T.ta + 1.2;          // "toque no insumo"
+  T.p0 = T.ts + 1.1;          // 1º insumo (completo)
+  T.p1 = T.p0 + 3.75;         // 2º insumo (rápido)
+  T.p2 = T.p1 + 2.25;         // 3º insumo (rápido)
+  T.tc = T.p2 + 2.6;          // Concluir
+  T.s3 = T.tc + 4.3;          // passo 3 · "Não é mais obrigatório"
+  T.tl = T.s3 + 4.8;          // "Seu líder pode apropriar por você"
+  T.tout = T.tl + 5.6;        // cartão sai
+  T.e0 = T.tout + 0.1;        // caminho opcional pela EAP
+  T.s4 = T.e0 + 6.6;          // passo 4 · enviar
+  T.send = T.s4 + 4.3;        // toque em Enviar
+  T.s5 = T.send + 2.65;       // resumo
+  T.foot = T.s5 + 2.3;        // "Dúvidas? Fale com o seu líder."
+  const DURATION = Math.round((T.s5 + 6.45) * 10) / 10;
 
   /* ------------------------------------------------------------------------
      DADOS DA DEMONSTRAÇÃO (itens reais das capturas + exemplos plausíveis)
@@ -102,19 +122,20 @@
      NARRAÇÃO OPCIONAL (arquivos em tutorial/audio/narracao-01.mp3 …)
      ------------------------------------------------------------------------ */
   const NARR = [
-    { cue: 3.9, text: "Primeiro, confira quem vai retirar o material." },
-    { cue: 8.2, text: "Depois, escolha os insumos." },
-    { cue: 10.2, text: "Novidade: filtro por tipo de serviço." },
-    { cue: 13.0, text: "Hidráulica? Só aparece hidráulica." },
-    { cue: 15.1, text: "E assim por diante." },
-    { cue: 18.3, text: "Marque o que vai usar e toque em Concluir." },
-    { cue: 23.0, text: "Ajuste a quantidade, se precisar." },
-    { cue: 27.0, text: "E o serviço? Não é mais obrigatório." },
-    { cue: 31.5, text: "Seu líder pode apropriar por você. Ele pode indicar o serviço depois." },
-    { cue: 37.4, text: "Se souber o serviço, é só escolher na árvore da EAP." },
-    { cue: 43.9, text: "Por fim, envie agora ou junte no lote." },
-    { cue: 48.3, text: "Pronto, requisição enviada." },
-    { cue: 52.9, text: "Dúvidas? Fale com o seu líder." }
+    { cue: T.s1 + 0.2, text: "Primeiro, confira quem vai retirar o material." },
+    { cue: T.s2 + 0.4, text: "Depois, escolha os insumos." },
+    { cue: T.th - 1.8, text: "Novidade: filtro por tipo de serviço." },
+    { cue: T.th + 1.0, text: "Hidráulica? Só aparece hidráulica." },
+    { cue: T.te, text: "E assim por diante." },
+    { cue: T.ts + 0.5, text: "Toque no insumo e digite a quantidade." },
+    { cue: T.p1, text: "Repita para os outros e toque em Concluir." },
+    { cue: T.tc + 0.8, text: "Pronto: insumos no carrinho." },
+    { cue: T.s3 + 0.5, text: "E o serviço? Não é mais obrigatório." },
+    { cue: T.tl + 0.2, text: "Seu líder pode apropriar por você. Ele pode indicar o serviço depois." },
+    { cue: T.e0 + 0.4, text: "Se souber o serviço, é só escolher na árvore da EAP." },
+    { cue: T.s4 + 0.3, text: "Por fim, envie agora ou junte no lote." },
+    { cue: T.send + 0.4, text: "Pronto, requisição enviada." },
+    { cue: T.foot, text: "Dúvidas? Fale com o seu líder." }
   ];
   CFG.audio.narration.lines = NARR.map((n, i) => ({ src: `audio/narracao-${String(i + 1).padStart(2, "0")}.mp3`, cue: n.cue, text: n.text }));
 
@@ -198,6 +219,38 @@
       picked.appendChild(r);
     });
 
+    // telas de quantidade (uma por insumo escolhido, no mesmo modal) + teclado numérico
+    const qpWrap = $("#qpages");
+    const qps = PICK.map((id, i) => {
+      const it = ITEMS[id];
+      const cat = CATS.find((c) => c.key === it.cat);
+      const [num, unit] = PICK_QTY[i].split(" ");
+      const p = document.createElement("div");
+      p.className = "qp";
+      p.innerHTML = `<div class="sh-head"><svg class="back" viewBox="0 0 24 24"><path d="M15.4 7.4 14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg><div class="sh-tt"><b>${it.name}</b><span><i class="tag">${ICON[it.cat]}${cat.label}</i></span></div></div>` +
+        `<div class="qp-body"><div class="qp-lbl">Quantidade</div><div class="qp-field"><i class="ring"></i><span class="qp-val"><span class="ph">0</span>${num.split("").map((d) => `<b class="d">${d}</b>`).join("")}<i class="qp-caret"></i></span><em>${unit}</em></div>` +
+        `<div class="qp-hint">Em estoque: ${it.qty}</div><div class="qp-add">Adicionar</div></div>`;
+      qpWrap.appendChild(p);
+      return p;
+    });
+    const kpad = $("#kpad");
+    const keyEl = {};
+    ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0", "⌫"].forEach((k) => {
+      const e = document.createElement("div");
+      e.className = "k" + (k === "," || k === "⌫" ? " fn" : "");
+      e.textContent = k;
+      kpad.appendChild(e);
+      keyEl[k] = e;
+    });
+    const qpills = PICK.map((id, i) => {
+      const q = document.createElement("span");
+      q.className = "qpill";
+      q.textContent = PICK_QTY[i];
+      rows[id].appendChild(q);
+      rows[id].style.paddingRight = "84px";
+      return q;
+    });
+
     // árvore da EAP: três níveis + cabeçalhos
     const eapSheet = $("#sh-eap");
     const head0 = $("#eap-head0");
@@ -258,6 +311,13 @@
       eapOk: null
     };
     CATS.forEach((c) => (M.chip[c.key] = R(chip[c.key])));
+    M.qp = qps.map((p) => ({ field: R($(".qp-field", p)), add: R($(".qp-add", p)) }));
+    M.key = {};
+    Object.keys(keyEl).forEach((k) => (M.key[k] = R(keyEl[k])));
+    // posição do cursor depois de n dígitos (os dígitos ocupam espaço mesmo invisíveis)
+    const caretX = qps.map((p) => [0].concat($$(".qp-val .d", p).map((d) => d.offsetLeft + d.offsetWidth + 1)));
+    gsap.set(qps, { xPercent: 100 });
+    gsap.set(kpad, { yPercent: 110 });
     gsap.set(head2, { opacity: 1 });
     M.eapOk = R($(".concluir", head2));
     gsap.set([insSheet, eapSheet], { yPercent: 102, visibility: "visible" });
@@ -267,7 +327,6 @@
     const pickedH = picked.offsetHeight;
     const sec3Filled = R($("#sec3"));
     const tileSvcFilled = R($("#tile-svc"));
-    const qtyBtn = R($$(".pk-qty i", picked)[5]); // "+" da 3ª linha
     const pickedRect = R(picked);
     picked.style.display = "";
 
@@ -458,7 +517,7 @@
     /* ---------------- estados iniciais ---------------- */
     gsap.set(cam, { x: OVER.x, y: OVER.y + 1500, scale: OVER.scale });
     gsap.set("#cap", { opacity: 0, y: -40 });
-    tl.to("#cap", { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 2.9);
+    tl.to("#cap", { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, T.s1 - 0.8);
     gsap.set(stpLines, { scaleX: 0 });
     gsap.set(spot, { left: M.who.x, top: M.who.y, width: M.who.w, height: M.who.h, opacity: 0 });
     gsap.set(tapEl, { opacity: 0 });
@@ -472,56 +531,58 @@
     layoutRows(FIRST_PAGE_ALL, 0, true);
 
     /* ====================================================================
-       0 — ABERTURA (0 – 3.7)
+       0 — ABERTURA
        ==================================================================== */
     gsap.set("#dots", { opacity: 0.55 });
     gsap.set(cam, { y: OVER.y + 470 });
-    tl.to(cam, { y: OVER.y + 380, duration: 2.4, ease: "sine.inOut" }, 0);
-    tl.to("#intro", { y: -14, duration: 2.4, ease: "sine.inOut" }, 0);
+    tl.to(cam, { y: OVER.y + 380, duration: T.s1 - 1.3, ease: "sine.inOut" }, 0);
+    tl.to("#intro", { y: -14, duration: T.s1 - 1.3, ease: "sine.inOut" }, 0);
     sfx("whoosh", 0.15, { dur: 1.2, f0: 220, f1: 1100, v: 0.22, pan0: -0.2, pan1: 0.2, peak: 0.6 });
     // o título sobe e o celular entra por inteiro
-    tl.to("#intro", { y: -520, opacity: 0, duration: 1.0, ease: "power2.inOut" }, 2.45);
-    camTo(OVER, 2.5, 1.25, "power3.out");
-    tl.to("#dots", { opacity: 0.4, duration: 1.0 }, 2.6);
-    tl.to("#steps", { opacity: 1, duration: 0.6 }, 3.2);
-    sfx("whoosh", 2.5, { dur: 1.1, f0: 180, f1: 900, v: 0.35, pan0: 0, pan1: 0, peak: 0.55 });
+    tl.to("#intro", { y: -520, opacity: 0, duration: 1.0, ease: "power2.inOut" }, T.s1 - 1.25);
+    camTo(OVER, T.s1 - 1.2, 1.25, "power3.out");
+    tl.to("#dots", { opacity: 0.4, duration: 1.0 }, T.s1 - 1.1);
+    tl.to("#steps", { opacity: 1, duration: 0.6 }, T.s1 - 0.5);
+    sfx("whoosh", T.s1 - 1.2, { dur: 1.1, f0: 180, f1: 900, v: 0.35, pan0: 0, pan1: 0, peak: 0.55 });
 
     /* ====================================================================
-       1 — QUEM RETIRA (3.7 – 7.8)
+       1 — QUEM RETIRA
        ==================================================================== */
+    const S1 = T.s1;
     const c1 = caption({ kicker: "Passo 1", title: "Confira <em>quem retira</em>", sub: "Já vem preenchido. Só troque se precisar." });
-    capIn(c1, 3.7);
-    stepOn(0, 3.7);
-    camTo(focusOn(M.sec1, 10, 2.6), 4.0, 1.1);
-    spotTo(M.who, 4.7, { pad: 5, radius: 12 });
+    capIn(c1, S1);
+    stepOn(0, S1);
+    camTo(focusOn(M.sec1, 10, 2.6), S1 + 0.3, 1.1);
+    spotTo(M.who, S1 + 1.0, { pad: 5, radius: 12 });
     // sem toque: conferir não exige ação
-    tl.to("#b1 .ck", { opacity: 1, duration: 0.3 }, 6.4);
-    tl.to("#b1", { scale: 1.25, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, 6.4);
-    sfx("blip", 6.42, { f: 1500, len: 0.05, v: 2.0, pan: 0 });
-    stepDone(0, 6.6);
-    spotOff(7.3);
+    tl.to("#b1 .ck", { opacity: 1, duration: 0.3 }, S1 + 2.7);
+    tl.to("#b1", { scale: 1.25, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, S1 + 2.7);
+    sfx("blip", S1 + 2.72, { f: 1500, len: 0.05, v: 2.0, pan: 0 });
+    stepDone(0, S1 + 2.9);
+    spotOff(S1 + 3.6);
 
     /* ====================================================================
-       2 — INSUMOS + NOVO FILTRO (7.8 – 26.3)
+       2 — INSUMOS + NOVO FILTRO POR TIPO DE SERVIÇO
        ==================================================================== */
+    const S2 = T.s2;
     const c2 = caption({ kicker: "Passo 2", title: "Escolha os <em>insumos</em>", sub: "Toque em <b>Escolher insumos</b>." });
-    capSwap(c1, c2, 7.8);
-    stepOn(1, 8.1);
-    camTo(focusOn(M.sec2, 10, 2.6), 8.1, 1.1);
-    spotTo(M.tileIns, 8.6, { pad: 4, radius: 14 });
-    tapAt(M.tileIns.x + 40, M.tileIns.y + M.tileIns.h / 2, 9.55, { label: "Toque aqui", cut: 9.75 });
-    spotOff(9.7, 0.3);
+    capSwap(c1, c2, S2);
+    stepOn(1, S2 + 0.3);
+    camTo(focusOn(M.sec2, 10, 2.6), S2 + 0.3, 1.1);
+    spotTo(M.tileIns, S2 + 0.8, { pad: 4, radius: 14 });
+    tapAt(M.tileIns.x + 40, M.tileIns.y + M.tileIns.h / 2, S2 + 1.75, { label: "Toque aqui", cut: S2 + 1.95 });
+    spotOff(S2 + 1.9, 0.3);
     // a folha de insumos sobe; a câmera enquadra a parte de cima da tela
-    tl.to(insSheet, { yPercent: 0, duration: 0.8, ease: "power3.out" }, 9.75);
-    sfx("whoosh", 9.75, { dur: 0.7, f0: 300, f1: 1400, v: 0.3, pan0: 0, pan1: 0, peak: 0.5 });
+    tl.to(insSheet, { yPercent: 0, duration: 0.8, ease: "power3.out" }, S2 + 1.95);
+    sfx("whoosh", S2 + 1.95, { dur: 0.7, f0: 300, f1: 1400, v: 0.3, pan0: 0, pan1: 0, peak: 0.5 });
     const sheetTop = { x: 0, y: 34, w: 360, h: 470 };
-    camTo(focusOn(sheetTop, 0, 2.6), 9.85, 1.1);
+    camTo(focusOn(sheetTop, 0, 2.6), S2 + 2.05, 1.1);
 
     // NOVO: filtro por tipo de serviço — a fileira de chips fica em foco ~1 s antes do toque
     const c3 = caption({ kicker: "Novo", kcls: "new", title: "Filtre por|<em>tipo de serviço</em>", sub: "<span class=\"s0\"><b>Hidráulica?</b> Só material de hidráulica.</span><span class=\"s1\"><b>Elétrica, Alvenaria…</b> e assim por diante.</span>" });
-    capSwap(c2, c3, 10.3);
-    spotTo(M.chips, 10.9, { pad: 2, radius: 16 });
-    const TH = 12.0;
+    capSwap(c2, c3, S2 + 2.5);
+    spotTo(M.chips, T.th - 1.1, { pad: 2, radius: 16 });
+    const TH = T.th;
     const hTap = chipTap("hid");
     tapAt(hTap.x, hTap.y, TH, { hold: 0.4, label: "Toque aqui", light: true });
     chipSelect("all", "hid", TH + 0.05);
@@ -535,7 +596,7 @@
     tl.to("#ins-rows", { y: -hidScroll, duration: 0.9, ease: "power2.inOut" }, TH + 1.2);
 
     // e assim por diante: Elétrica, Alvenaria… (a fileira rola até o último tipo)
-    const TE = TH + 3.1;
+    const TE = T.te;
     const s0 = $(".s0", c3.el);
     const s1 = $(".s1", c3.el);
     gsap.set(s1, { opacity: 0 });
@@ -548,83 +609,156 @@
     layoutRows(byCat("ele"), TE + 0.15);
     const chipScroll = Math.max(0, M.chip.aca.x + M.chip.aca.w - (M.chips.x + M.chips.w - 10));
     tl.to(chipsEl.children, { x: -chipScroll, duration: 0.7, ease: "power2.inOut" }, TE + 0.7);
-    const TA = TE + 1.5;
+    const TA = T.ta;
     const aTap = chipTap("alv", chipScroll);
     tapAt(aTap.x, aTap.y, TA, { hold: 0.35, light: true });
     chipSelect("ele", "alv", TA + 0.05);
     layoutRows(byCat("alv"), TA + 0.15);
 
-    // seleção
-    const A = 0.5; // deslocamento do restante do passo 2 em relação ao roteiro base
-    const c5 = caption({ kicker: "Passo 2", title: "Marque o que|<em>vai usar</em>", sub: "Depois, toque em <b>Concluir</b>." });
-    capSwap(c3, c5, 17.3 + A);
+    /* ---- escolher cada insumo: toque → tela de quantidade (mesmo modal) → Adicionar → volta à lista ---- */
+    const c5 = caption({ kicker: "Passo 2", title: "Toque no|<em>insumo</em>", sub: "Abre a tela da quantidade." });
+    capSwap(c3, c5, T.ts);
     const alvIds = byCat("alv");
     const LIST_SCROLL = 150;
     const rowY = (id, sc) => M.list.y + alvIds.indexOf(id) * ROW_H + ROW_H / 2 - (sc || 0);
-    tl.to("#ins-rows", { y: -LIST_SCROLL, duration: 0.6, ease: "power2.inOut" }, 19.15 + A);
-    PICK.forEach((id, i) => {
-      const t = 18.0 + A + i * 0.75 + (i === 2 ? 0.3 : 0);
-      tapAt(16 + 10, rowY(id, i === 2 ? LIST_SCROLL : 0), t, { move: i > 0, stay: true, moveD: 0.4 });
-      tl.to($(".radio .on", rows[id]), { scale: 1, duration: 0.3, ease: "back.out(1.6)" }, t + 0.03);
-      tl.to(rows[id], { backgroundColor: "#f5f8ff", duration: 0.3 }, t + 0.03);
-      sfx("blip", t + 0.05, { f: 1300 + i * 220, len: 0.04, v: 1.4 });
-    });
-    // Concluir (o dedo desliza do último item até o botão)
-    tl.to("#ins-ok", { backgroundColor: "#3364e0", color: "#ffffff", duration: 0.3 }, 20.0 + A);
-    tapAt(M.insOk.x + M.insOk.w / 2, M.insOk.y + M.insOk.h / 2, 20.6 + A, { move: true, moveD: 0.45, light: true, cut: 20.8 + A });
-    tl.to(insSheet, { yPercent: 102, duration: 0.75, ease: "power3.inOut" }, 20.8 + A);
-    sfx("whoosh", 20.8 + A, { dur: 0.7, f0: 1200, f1: 300, v: 0.28, pan0: 0, pan1: 0, peak: 0.4 });
+    const p1 = $("#ins-p1");
+    const PUSH = 0.45;
+    // tela da quantidade entra pela direita; a lista recua (navegação dentro do modal)
+    const pushIn = (i, t) => {
+      tl.to(p1, { xPercent: -30, duration: PUSH, ease: "power3.inOut" }, t);
+      tl.to(qps[i], { xPercent: 0, duration: PUSH, ease: "power3.inOut" }, t);
+      sfx("whoosh", t, { dur: 0.4, f0: 900, f1: 2200, v: 0.16, pan0: 0.4, pan1: -0.2, peak: 0.5 });
+    };
+    const popOut = (i, t) => {
+      tl.to(qps[i], { xPercent: 100, duration: PUSH, ease: "power3.inOut" }, t);
+      tl.to(p1, { xPercent: 0, duration: PUSH, ease: "power3.inOut" }, t);
+      tl.to(kpad, { yPercent: 110, duration: 0.35, ease: "power2.in" }, t);
+      sfx("whoosh", t, { dur: 0.4, f0: 2000, f1: 700, v: 0.14, pan0: -0.3, pan1: 0.3, peak: 0.4 });
+    };
+    // digitação: tecla acende, dígito aparece, cursor anda
+    const typeQty = (i, t0, gap, moveD) => {
+      const q = qps[i];
+      const ds = $$(".qp-val .d", q);
+      const caret = $(".qp-caret", q);
+      const keys = PICK_QTY[i].split(" ")[0].split("");
+      keys.forEach((k, j) => {
+        const t = t0 + j * gap;
+        const kr = M.key[k];
+        tapAt(kr.x + kr.w / 2, kr.y + kr.h / 2, t, { move: j > 0, stay: true, moveD, light: true, v: 0.4 });
+        tl.to(keyEl[k], { backgroundColor: "#b9bcc4", duration: 0.05 }, t - 0.02);
+        tl.to(keyEl[k], { backgroundColor: "#ffffff", duration: 0.18 }, t + 0.08);
+        tl.fromTo(ds[j], { opacity: 0, y: 6, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.18, ease: "back.out(2)", immediateRender: false }, t);
+        tl.set(caret, { x: caretX[i][j + 1] }, t);
+      });
+      return t0 + (keys.length - 1) * gap;
+    };
+    // campo em foco: borda azul + cursor piscando (piscar desenhado na timeline)
+    const focusField = (i, t, until) => {
+      const q = qps[i];
+      tl.to($(".qp-field .ring", q), { opacity: 1, duration: 0.15 }, t);
+      tl.to($(".ph", q), { opacity: 0, duration: 0.12 }, t);
+      const caret = $(".qp-caret", q);
+      for (let tb = t; tb < until; tb += 0.5) tl.set(caret, { opacity: tb + 0.25 < until && Math.round((tb - t) / 0.5) % 2 === 1 ? 0 : 1 }, tb);
+      tl.set(caret, { opacity: 0 }, until);
+    };
+    // enquadramentos: lista (topo do modal) e quantidade + teclado
+    const LIST_SHOT = focusOn(sheetTop, 0, 2.6);
+    const QTY_SHOT = focusOn({ x: 0, y: 40, w: 360, h: 740 }, 0, 2.6); // nome do item + campo + teclado
+    const pickItem = (i, T0, full) => {
+      const id = PICK[i];
+      const sc = i === 2 ? LIST_SCROLL : 0;
+      tapAt(150, rowY(id, sc), T0, { hold: 0.15, cut: T0 + 0.15 });
+      tl.to(rows[id], { backgroundColor: "#f5f8ff", duration: 0.2 }, T0 + 0.02);
+      pushIn(i, T0 + 0.15);
+      const add = M.qp[i].add;
+      let tAdd;
+      if (full) {
+        // 1º item completo: toca no campo, teclado sobe, digita
+        const f = M.qp[i].field;
+        tapAt(f.x + 60, f.y + f.h / 2, T0 + 0.95, { light: true, cut: T0 + 1.2 });
+        tl.to(kpad, { yPercent: 0, duration: 0.35, ease: "power3.out" }, T0 + 1.0);
+        // a câmera desce junto com o teclado: campo + teclas no quadro
+        camTo(QTY_SHOT, T0 + 0.95, 0.7, "power2.inOut");
+        const tLast = typeQty(i, T0 + 1.55, 0.24, 0.14);
+        tAdd = tLast + 0.6;
+        focusField(i, T0 + 1.0, tAdd);
+      } else {
+        // próximos itens: campo já em foco e teclado aberto — mais rápido
+        tl.to(kpad, { yPercent: 0, duration: 0.3, ease: "power3.out" }, T0 + 0.3);
+        const tLast = typeQty(i, T0 + 0.75, 0.16, 0.1);
+        tAdd = tLast + 0.45;
+        focusField(i, T0 + 0.3, tAdd);
+      }
+      tapAt(add.x + add.w * 0.72, add.y + add.h / 2, tAdd, { move: true, moveD: 0.3, light: true, cut: tAdd + 0.15 });
+      tl.to($(".qp-add", qps[i]), { scale: 0.96, duration: 0.07, ease: "power2.in" }, tAdd - 0.03);
+      tl.to($(".qp-add", qps[i]), { scale: 1, duration: 0.25, ease: "back.out(2)" }, tAdd + 0.05);
+      popOut(i, tAdd + 0.15);
+      // de volta à lista: item marcado com a quantidade
+      const tBack = tAdd + 0.5;
+      tl.to($(".radio .on", rows[id]), { scale: 1, duration: 0.3, ease: "back.out(1.8)" }, tBack);
+      tl.fromTo(qpills[i], { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)", immediateRender: false }, tBack + 0.05);
+      sfx("blip", tBack + 0.05, { f: 1300 + i * 220, len: 0.05, v: 1.6 });
+      return tBack + 0.35;
+    };
+    const end0 = pickItem(0, T.p0, true);
+    // a quantidade entra junto com a tela nova
+    const c6 = caption({ kicker: "Passo 2", title: "Digite a|<em>quantidade</em>", sub: "E toque em <b>Adicionar</b>." });
+    capSwap(c5, c6, T.p0 + 0.25);
+    tl.to("#ins-ok", { backgroundColor: "#3364e0", color: "#ffffff", duration: 0.3 }, end0 - 0.2);
+    const c7 = caption({ kicker: "Passo 2", title: "Repita para|<em>os outros itens</em>", sub: "No fim, toque em <b>Concluir</b>." });
+    capSwap(c6, c7, end0 - 0.45);
+    pickItem(1, T.p1, false);
+    tl.to("#ins-rows", { y: -LIST_SCROLL, duration: 0.4, ease: "power2.inOut" }, T.p2 - 0.5);
+    pickItem(2, T.p2, false);
+    // Concluir (a câmera volta ao topo do modal)
+    const TC = T.tc;
+    camTo(LIST_SHOT, TC - 0.95, 0.6, "power2.inOut");
+    tapAt(M.insOk.x + M.insOk.w / 2, M.insOk.y + M.insOk.h / 2, TC, { light: true, cut: TC + 0.2 });
+    tl.to(insSheet, { yPercent: 102, duration: 0.75, ease: "power3.inOut" }, TC + 0.2);
+    sfx("whoosh", TC + 0.2, { dur: 0.7, f0: 1200, f1: 300, v: 0.28, pan0: 0, pan1: 0, peak: 0.4 });
 
     // passo 2 preenchido + barra inferior "Completo"
-    tl.set(picked, { display: "block", height: 0, marginTop: 0 }, 21.3 + A);
-    tl.to(picked, { height: pickedH, marginTop: 10, duration: 0.7, ease: "power3.inOut" }, 21.3 + A);
-    camTo(focusOn({ x: M.sec2.x, y: M.sec2.y, w: M.sec2.w, h: M.sec2.h + pickedH }, 8, 2.6), 21.1 + A, 1.1);
-    tl.to("#b2 .ck", { opacity: 1, duration: 0.3 }, 22.0 + A);
-    tl.to("#b2", { backgroundColor: "#30d158", color: "#ffffff", duration: 0.3 }, 22.0 + A);
-    stepDone(1, 22.1 + A);
-
-    const c6 = caption({ kicker: "Passo 2", title: "Ajuste a|<em>quantidade</em>", sub: "Toque em <b>+</b> ou <b>−</b>." });
-    capSwap(c5, c6, 22.0 + A);
-    // quantidade: valor antigo e novo empilhados no mesmo campo (determinístico)
-    const q3 = $$(".pk-row .q", picked)[2];
-    q3.innerHTML = `<b class="v0">${PICK_QTY[2]}</b><b class="v1">121 un</b>`;
-    tapAt(qtyBtn.x + qtyBtn.w / 2, qtyBtn.y + qtyBtn.h / 2, 23.1 + A);
-    tl.set($(".v0", q3), { opacity: 0 }, 23.12 + A);
-    // opacidade também no destino: voltar no tempo e reproduzir de novo dá o mesmo quadro
-    tl.fromTo($(".v1", q3), { opacity: 1, scale: 1.25, color: "#3364e0" }, { opacity: 1, scale: 1, color: "#111111", duration: 0.4, ease: "power2.out", immediateRender: false }, 23.12 + A);
-
+    const c6b = caption({ kicker: "Passo 2", kcls: "ok", title: "Insumos|<em>no carrinho</em>", sub: "Cada um com a sua quantidade." });
+    capSwap(c7, c6b, TC + 0.3);
+    tl.set(picked, { display: "block", height: 0, marginTop: 0 }, TC + 0.7);
+    tl.to(picked, { height: pickedH, marginTop: 10, duration: 0.7, ease: "power3.inOut" }, TC + 0.7);
+    camTo(focusOn({ x: M.sec2.x, y: M.sec2.y, w: M.sec2.w, h: M.sec2.h + pickedH }, 8, 2.6), TC + 0.5, 1.1);
+    tl.to("#b2 .ck", { opacity: 1, duration: 0.3 }, TC + 1.4);
+    tl.to("#b2", { backgroundColor: "#30d158", color: "#ffffff", duration: 0.3 }, TC + 1.4);
+    stepDone(1, TC + 1.5);
     // a barra inferior já fica completa: o passo 3 não trava o envio
-    camTo(focusOn({ x: 0, y: M.bbar.y - 150, w: 360, h: M.bbar.h + 150 }, 0, 2.4), 23.9 + A, 1.1);
-    tl.to("#cnt0", { yPercent: -100, duration: 0.45, ease: "power2.inOut" }, 24.4 + A);
-    tl.to("#cnt1", { yPercent: 0, duration: 0.45, ease: "power2.inOut" }, 24.45 + A);
-    tl.to("#hint0", { opacity: 0, duration: 0.3 }, 24.4 + A);
-    tl.to("#hint1", { opacity: 1, duration: 0.3 }, 24.55 + A);
-    tl.to("#st0", { opacity: 0, duration: 0.3 }, 24.4 + A);
-    tl.to("#st1", { opacity: 1, duration: 0.3 }, 24.55 + A);
-    tl.to("#cart-n", { scale: 1, duration: 0.45, ease: "back.out(2)" }, 24.5 + A);
-    tl.to("#lote", { backgroundColor: "#eaeffc", color: "#3364e0", duration: 0.4 }, 24.6 + A);
-    tl.to("#send", { backgroundColor: "#3364e0", duration: 0.4 }, 24.6 + A);
-    sfx("blip", 24.5 + A, { f: 1800, len: 0.05, v: 2.0, pan: 0 });
+    const TB = TC + 2.3;
+    camTo(focusOn({ x: 0, y: M.bbar.y - 150, w: 360, h: M.bbar.h + 150 }, 0, 2.4), TB, 1.0);
+    tl.to("#cnt0", { yPercent: -100, duration: 0.45, ease: "power2.inOut" }, TB + 0.4);
+    tl.to("#cnt1", { yPercent: 0, duration: 0.45, ease: "power2.inOut" }, TB + 0.45);
+    tl.to("#hint0", { opacity: 0, duration: 0.3 }, TB + 0.4);
+    tl.to("#hint1", { opacity: 1, duration: 0.3 }, TB + 0.55);
+    tl.to("#st0", { opacity: 0, duration: 0.3 }, TB + 0.4);
+    tl.to("#st1", { opacity: 1, duration: 0.3 }, TB + 0.55);
+    tl.to("#cart-n", { scale: 1, duration: 0.45, ease: "back.out(2)" }, TB + 0.5);
+    tl.to("#lote", { backgroundColor: "#eaeffc", color: "#3364e0", duration: 0.4 }, TB + 0.6);
+    tl.to("#send", { backgroundColor: "#3364e0", duration: 0.4 }, TB + 0.6);
+    sfx("blip", TB + 0.5, { f: 1800, len: 0.05, v: 2.0, pan: 0 });
     // balão logo acima de Enviar (fora do cartão do serviço)
-    callout("Já dá para <b>enviar</b>", M.send.x + M.send.w - 120, M.send.y - 40, 24.45 + A, 1.9, "blue");
+    callout("Já dá para <b>enviar</b>", M.send.x + M.send.w - 120, M.send.y - 40, TB + 0.55, 1.6, "blue");
 
     /* ====================================================================
        3 — SERVIÇO: NÃO É MAIS OBRIGATÓRIO. SEU LÍDER PODE APROPRIAR POR VOCÊ
        ==================================================================== */
+    const t3 = T.s3;
     // rola o formulário para mostrar o passo 3
     const scrollY = Math.max(0, sec3Filled.y + sec3Filled.h + 20 - (M.bbar.y - 8));
-    tl.to("#form", { y: -scrollY, duration: 0.9, ease: "power2.inOut" }, 25.8 + A);
+    tl.to("#form", { y: -scrollY, duration: 0.9, ease: "power2.inOut" }, t3 - 0.2);
     const sec3 = { x: sec3Filled.x, y: sec3Filled.y - scrollY, w: sec3Filled.w, h: sec3Filled.h };
     const shift3 = sec3Filled.y - M.sec3.y;
     const opc = { x: M.opc.x, y: M.opc.y + shift3 - scrollY, w: M.opc.w, h: M.opc.h };
     const tileSvc = { x: tileSvcFilled.x, y: tileSvcFilled.y - scrollY, w: tileSvcFilled.w, h: tileSvcFilled.h };
     const SBOX = { x: 40, y: 520, w: 1000, h: 560 }; // passo 3 no alto; o cartão do líder fica embaixo
-    camTo(focusOn(sec3, 10, 2.7, SBOX), 25.9 + A, 1.2);
+    camTo(focusOn(sec3, 10, 2.7, SBOX), t3 - 0.1, 1.2);
 
     // a mensagem principal entra direto e fica ~4 s: ênfase em "Não é mais"
     const c8 = caption({ kicker: "Passo 3 · Serviço", kcls: "ok", title: "<em class=\"ul\">Não é mais<i class=\"uline\"></i></em>|obrigatório", sub: "Dá para enviar sem escolher o serviço." });
-    const t3 = 26.0 + A;
-    capSwap(c6, c8, t3);
+    capSwap(c6b, c8, t3);
     stepOn(2, t3 + 0.2);
     tl.fromTo($(".uline", c8.el), { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.inOut", immediateRender: false }, t3 + 1.1);
     spotTo(opc, t3 + 0.8, { pad: 4, radius: 12 });
@@ -633,7 +767,7 @@
     tl.to("#opc", { scale: 1, duration: 0.5, ease: "power2.inOut" }, tOpc + 0.5);
     sfx("blip", tOpc + 0.05, { f: 1600, len: 0.05, v: 2.0, pan: 0 });
 
-    // cartão: antes/agora + você envia → seu líder apropria (depois)
+    // cartão: antes/agora + você envia → seu líder pode apropriar depois
     const leader = $("#leader");
     gsap.set(leader, { left: 70, top: 560, width: 940 });
     const ldBa = $(".ld-ba", leader);
@@ -646,7 +780,7 @@
     gsap.set(ldNew, { opacity: 0, scale: 0.9 });
     gsap.set(ldStrike, { scaleX: 0 });
     const c9 = caption({ kicker: "Novo", kcls: "new", title: "Seu líder pode|<em>apropriar por você</em>", sub: "Ele pode indicar o serviço depois." });
-    const tL = t3 + 4.8;
+    const tL = T.tl;
     capSwap(c8, c9, tL);
     tl.set(leader, { visibility: "visible" }, tL + 0.1);
     tl.fromTo(leader, { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "power3.out", immediateRender: false }, tL + 0.1);
@@ -658,65 +792,66 @@
     tl.to(ldNodes[1], { opacity: 1, y: 0, duration: 0.5 }, tL + 1.95);
     sfx("whoosh", tL + 1.45, { dur: 0.8, f0: 400, f1: 1600, v: 0.25, pan0: -0.5, pan1: 0.5, peak: 0.6 });
     sfx("blip", tL + 0.87, { f: 1500, len: 0.05, v: 2.0, pan: 0 });
-    const tOut = tL + 5.6; // o cartão completo fica ~3 s legível
+    const tOut = T.tout; // o cartão completo fica ~3 s legível
     tl.to(leader, { opacity: 0, y: -40, scale: 0.97, duration: 0.25, ease: "power2.in" }, tOut);
     tl.set(leader, { visibility: "hidden" }, tOut + 0.3);
     spotOff(tOut + 0.2);
     stepOpt(2, tOut + 0.2);
     tl.to("#opc", { backgroundColor: "#efeff0", color: "#828282", duration: 0.4 }, tOut + 0.2);
 
-    // caminho opcional: escolher na árvore da EAP (tudo a partir daqui desloca X s)
-    const X = tOut + 0.1 - 33.5;
+    // caminho opcional: escolher na árvore da EAP
+    const E0 = T.e0;
     const c10 = caption({ kicker: "Opcional", kcls: "ok", title: "Sabe o serviço?|<em>Escolha na EAP</em>", sub: "Toque nas pastas até achar o serviço." });
-    capSwap(c9, c10, 33.5 + X);
-    camTo(focusOn(tileSvc, 10, 2.6), 33.6 + X, 1.0);
-    tapAt(tileSvc.x + 40, tileSvc.y + tileSvc.h / 2, 34.75 + X, { cut: 34.9 + X });
-    tl.to("#scrim", { opacity: 0.45, duration: 0.5 }, 34.9 + X);
-    tl.to(eapSheet, { yPercent: 0, duration: 0.8, ease: "power3.out" }, 34.9 + X);
-    sfx("whoosh", 34.9 + X, { dur: 0.7, f0: 300, f1: 1400, v: 0.28, pan0: 0, pan1: 0, peak: 0.5 });
-    camTo(focusOn({ x: 0, y: 56, w: 360, h: 470 }, 0, 2.6), 34.9 + X, 0.8, "power3.out");
+    capSwap(c9, c10, E0);
+    camTo(focusOn(tileSvc, 10, 2.6), E0 + 0.1, 1.0);
+    tapAt(tileSvc.x + 40, tileSvc.y + tileSvc.h / 2, E0 + 1.25, { cut: E0 + 1.4 });
+    tl.to("#scrim", { opacity: 0.45, duration: 0.5 }, E0 + 1.4);
+    tl.to(eapSheet, { yPercent: 0, duration: 0.8, ease: "power3.out" }, E0 + 1.4);
+    sfx("whoosh", E0 + 1.4, { dur: 0.7, f0: 300, f1: 1400, v: 0.28, pan0: 0, pan1: 0, peak: 0.5 });
+    // câmera acompanha a folha da EAP (mesma curva, sem "vai e volta")
+    camTo(focusOn({ x: 0, y: 56, w: 360, h: 470 }, 0, 2.6), E0 + 1.4, 0.8, "power3.out");
     // cabeçalhos trocam em sequência (sem sobreposição de textos)
     const headSwap = (a, b, t) => {
       tl.to(a, { opacity: 0, x: -24, duration: 0.25, ease: "power2.in" }, t);
       tl.to(b, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, t + 0.27);
     };
     // nível 1 → TORRE
-    tapAt(M.eapRow1.x + 40, M.eapRow1.y + M.eapRow1.h / 2, 36.2 + X, { hold: 0.25 });
-    tl.to(eap1[3], { backgroundColor: "#eaeffc", duration: 0.2 }, 36.2 + X);
-    tl.to("#eap-l1", { xPercent: -100, duration: 0.6, ease: "power3.inOut" }, 36.4 + X);
-    tl.to("#eap-l2", { xPercent: 0, duration: 0.6, ease: "power3.inOut" }, 36.4 + X);
-    headSwap(head0, head1, 36.4 + X);
+    tapAt(M.eapRow1.x + 40, M.eapRow1.y + M.eapRow1.h / 2, E0 + 2.7, { hold: 0.25 });
+    tl.to(eap1[3], { backgroundColor: "#eaeffc", duration: 0.2 }, E0 + 2.7);
+    tl.to("#eap-l1", { xPercent: -100, duration: 0.6, ease: "power3.inOut" }, E0 + 2.9);
+    tl.to("#eap-l2", { xPercent: 0, duration: 0.6, ease: "power3.inOut" }, E0 + 2.9);
+    headSwap(head0, head1, E0 + 2.9);
     // nível 2 → VEDAÇÕES
-    tapAt(M.eapRow2.x + 40, M.eapRow2.y + M.eapRow2.h / 2, 37.35 + X, { hold: 0.25 });
-    tl.to(eap2[3], { backgroundColor: "#eaeffc", duration: 0.2 }, 37.35 + X);
-    tl.to("#eap-l2", { xPercent: -100, duration: 0.6, ease: "power3.inOut" }, 37.55 + X);
-    tl.to("#eap-l3", { xPercent: 0, duration: 0.6, ease: "power3.inOut" }, 37.55 + X);
-    headSwap(head1, head2, 37.55 + X);
+    tapAt(M.eapRow2.x + 40, M.eapRow2.y + M.eapRow2.h / 2, E0 + 3.85, { hold: 0.25 });
+    tl.to(eap2[3], { backgroundColor: "#eaeffc", duration: 0.2 }, E0 + 3.85);
+    tl.to("#eap-l2", { xPercent: -100, duration: 0.6, ease: "power3.inOut" }, E0 + 4.05);
+    tl.to("#eap-l3", { xPercent: 0, duration: 0.6, ease: "power3.inOut" }, E0 + 4.05);
+    headSwap(head1, head2, E0 + 4.05);
     // atividade → BLOCO CERÂMICO - TORRE; o dedo desliza até Concluir
-    tapAt(M.eapRow3.x + 40, M.eapRow3.y + M.eapRow3.h / 2, 38.45 + X, { stay: true });
-    tl.to(eap3[0], { backgroundColor: "#eaeffc", duration: 0.25 }, 38.45 + X);
-    tl.to($(".concluir", head2), { backgroundColor: "#3364e0", color: "#ffffff", duration: 0.3 }, 38.6 + X);
-    tapAt(M.eapOk.x + M.eapOk.w / 2, M.eapOk.y + M.eapOk.h / 2, 39.1 + X, { move: true, moveD: 0.4, light: true, cut: 39.3 + X });
-    tl.to(eapSheet, { yPercent: 102, duration: 0.7, ease: "power3.inOut" }, 39.3 + X);
-    sfx("whoosh", 39.3 + X, { dur: 0.7, f0: 1200, f1: 300, v: 0.28, pan0: 0, pan1: 0, peak: 0.4 });
-    tl.to("#scrim", { opacity: 0, duration: 0.5 }, 39.4 + X);
+    tapAt(M.eapRow3.x + 40, M.eapRow3.y + M.eapRow3.h / 2, E0 + 4.95, { stay: true });
+    tl.to(eap3[0], { backgroundColor: "#eaeffc", duration: 0.25 }, E0 + 4.95);
+    tl.to($(".concluir", head2), { backgroundColor: "#3364e0", color: "#ffffff", duration: 0.3 }, E0 + 5.1);
+    tapAt(M.eapOk.x + M.eapOk.w / 2, M.eapOk.y + M.eapOk.h / 2, E0 + 5.6, { move: true, moveD: 0.4, light: true, cut: E0 + 5.8 });
+    tl.to(eapSheet, { yPercent: 102, duration: 0.7, ease: "power3.inOut" }, E0 + 5.8);
+    sfx("whoosh", E0 + 5.8, { dur: 0.7, f0: 1200, f1: 300, v: 0.28, pan0: 0, pan1: 0, peak: 0.4 });
+    tl.to("#scrim", { opacity: 0, duration: 0.5 }, E0 + 5.9);
     const svcTxt = $("#svc-t").parentNode;
     const svcNew = document.createElement("div");
     svcNew.innerHTML = "<b>BLOCO CERÂMICO - TORRE</b><span>4004001 · Vedações</span>";
     svcTxt.after(svcNew);
     Object.assign(svcNew.style, { position: "absolute", left: svcTxt.offsetLeft + "px", top: svcTxt.offsetTop + "px" });
     gsap.set(svcNew, { opacity: 0 });
-    tl.to(svcTxt, { opacity: 0, duration: 0.25 }, 39.6 + X);
-    tl.fromTo(svcNew, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, immediateRender: false }, 39.7 + X);
-    tl.to("#b3 .ck", { opacity: 1, duration: 0.3 }, 39.7 + X);
-    tl.to("#b3", { backgroundColor: "#30d158", color: "#ffffff", duration: 0.3 }, 39.7 + X);
-    stepDone(2, 39.7 + X);
-    camTo(focusOn(tileSvc, 30, 2.4), 39.3 + X, 0.9);
+    tl.to(svcTxt, { opacity: 0, duration: 0.25 }, E0 + 6.1);
+    tl.fromTo(svcNew, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.4, immediateRender: false }, E0 + 6.2);
+    tl.to("#b3 .ck", { opacity: 1, duration: 0.3 }, E0 + 6.2);
+    tl.to("#b3", { backgroundColor: "#30d158", color: "#ffffff", duration: 0.3 }, E0 + 6.2);
+    stepDone(2, E0 + 6.2);
+    camTo(focusOn(tileSvc, 30, 2.4), E0 + 5.8, 0.9);
 
     /* ====================================================================
        4 — ENVIAR
        ==================================================================== */
-    const t4 = 40.1 + X;
+    const t4 = T.s4;
     const c11 = caption({ kicker: "Enviar", title: "Envie agora|<em>ou junte no lote</em>" });
     capSwap(c10, c11, t4);
     stepOn(3, t4 + 0.2);
@@ -724,7 +859,7 @@
     spotTo({ x: M.lote.x, y: M.lote.y, w: M.send.x + M.send.w - M.lote.x, h: M.lote.h }, t4 + 0.9, { pad: 5, radius: 12 });
     callout("<b>Ao lote:</b> junta com outras requisições<br><b>Enviar:</b> manda agora", M.send.x + M.send.w - 230, M.lote.y - 56, t4 + 0.9, 2.4);
     spotOff(t4 + 3.4, 0.3);
-    const tSend = t4 + 4.3;
+    const tSend = T.send;
     tapAt(M.send.x + M.send.w * 0.8, M.send.y + M.send.h / 2, tSend, { label: "Toque aqui", light: true });
     tl.to("#send", { scale: 0.94, duration: 0.08, ease: "power2.in" }, tSend - 0.03);
     tl.to("#send", { scale: 1, duration: 0.35, ease: "back.out(2)" }, tSend + 0.07);
@@ -741,7 +876,7 @@
     /* ====================================================================
        5 — RESUMO (termina aqui, sem tela preta)
        ==================================================================== */
-    const t5 = tSend + 2.65;
+    const t5 = T.s5;
     const c13 = caption({ kicker: "Resumo", title: "Simples assim." });
     capSwap(c12, c13, t5);
     tl.to(cam, { y: "+=1500", duration: 1.1, ease: "power2.in" }, t5 + 0.1);
@@ -751,7 +886,7 @@
     tl.set(recap, { visibility: "visible", opacity: 1 }, t5 + 0.6);
     tl.to(rcRows, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out", stagger: 0.32 }, t5 + 0.7);
     rcRows.forEach((r, i) => sfx("tick", t5 + 0.75 + i * 0.32, { f: 2200 + i * 250, v: 1.4 }));
-    const tFoot = t5 + 2.3;
+    const tFoot = T.foot;
     gsap.set(".rc-foot", { opacity: 0, y: 20 });
     tl.to(".rc-foot", { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, tFoot);
     // o último quadro serve de lembrete
