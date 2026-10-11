@@ -132,7 +132,7 @@
     { cue: T.th - 1.8, text: "Novidade: filtro por tipo de serviço." },
     { cue: T.th + 1.0, text: "Hidráulica? Só aparece hidráulica." },
     { cue: T.te, text: "E assim por diante." },
-    { cue: T.ts + 0.5, text: "Toque no insumo e digite a quantidade." },
+    { cue: T.ts + 0.5, text: "Toque no insumo, digite a quantidade e toque em Adicionar." },
     { cue: T.p1, text: "Repita para os outros e toque em Concluir." },
     { cue: T.tc + 0.8, text: "Pronto: insumos no carrinho." },
     { cue: T.s3 + 0.5, text: "E o serviço? Não é mais obrigatório." },
@@ -424,8 +424,8 @@
     };
 
     const tapEl = $("#tap");
-    const ring = $(".ring", tapEl);
     const core = $(".core", tapEl);
+    const calloutsEl = $("#callouts");
     let lastTap = null;
     const tapAt = (x, y, t, o) => {
       o = o || {};
@@ -433,7 +433,7 @@
       const coreBg = o.light ? "rgba(17, 18, 20, 0.1)" : "rgba(17, 18, 20, 0.28)";
       if (o.move && lastTap) {
         const md = o.moveD || 0.35;
-        tl.to(tapEl, { left: x, top: y, duration: md, ease: "power2.inOut" }, t - md - 0.05);
+        tl.to(tapEl, { left: x, top: y, duration: md, ease: "power2.inOut" }, t - md - 0.01);
         tl.to(core, { backgroundColor: coreBg, duration: 0.15 }, t - 0.2);
       } else {
         const lead = o.label ? 0.8 : 0.3; // com balão "Toque aqui", o dedo aparece antes
@@ -441,9 +441,18 @@
         tl.set(core, { backgroundColor: coreBg }, t - lead);
         tl.fromTo(tapEl, { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power2.out", immediateRender: false }, t - lead);
       }
-      tl.to(core, { scale: 0.8, duration: 0.08, ease: "power2.in" }, t - 0.04);
-      tl.to(core, { scale: 1, duration: 0.22, ease: "power2.out" }, t + 0.05);
-      tl.fromTo(ring, { scale: 0.4, opacity: 0.95 }, { scale: 1.9, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, t);
+      // aperto do dedo cabe no intervalo até o próximo toque (digitação rápida não sobrepõe tweens)
+      const gap = o.gap || 1;
+      const pr = gap < 0.3 ? 0.04 : 0.08;
+      const rl = Math.min(0.22, gap - pr - 0.01);
+      tl.fromTo(core, { scale: 1 }, { scale: 0.8, duration: pr, ease: "power2.in", immediateRender: false }, t - pr / 2);
+      tl.fromTo(core, { scale: 0.8 }, { scale: 1, duration: rl, ease: "power2.out", immediateRender: false }, t + pr / 2);
+      // a onda do toque fica no ponto tocado (elemento próprio: não anda com o dedo nem disputa tweens)
+      const rg = document.createElement("i");
+      rg.className = "tap-ring";
+      calloutsEl.appendChild(rg);
+      gsap.set(rg, { left: x, top: y, opacity: 0 });
+      tl.fromTo(rg, { scale: 0.4, opacity: 0.95 }, { scale: 1.9, opacity: 0, duration: 0.5, ease: "power2.out", immediateRender: false }, t);
       let lb = null;
       if (o.label) {
         lb = document.createElement("div");
@@ -466,7 +475,6 @@
       sfx("click", t, { v: o.v || 0.7 });
     };
 
-    const calloutsEl = $("#callouts");
     const callout = (html, x, y, t, dur, cls, origin) => {
       const c = document.createElement("div");
       c.className = "callout" + (cls ? " " + cls : "");
@@ -507,7 +515,9 @@
       gsap.set(b, { visibility: "hidden" });
       gsap.set(c.words, { yPercent: 125 });
       if (c.kick) gsap.set(c.kick, { opacity: 0, scale: 0.6, transformOrigin: "0% 50%" });
+      if (c.kick && $(".shine", c.kick)) gsap.set($(".shine", c.kick), { xPercent: -120 });
       if (c.sub) gsap.set(c.sub, { opacity: 0, clipPath: "inset(0% 100% 0% 0%)" });
+      c.uline = $$(".uline", b);
       return c;
     };
     // line2At: a 2ª linha (e o subtítulo) só entram nesse instante (legenda progressiva)
@@ -532,6 +542,7 @@
     };
     const capOut = (c, t, keepKick) => {
       tl.to(c.words, { yPercent: -125, duration: 0.24, ease: "power3.in", stagger: 0.012 }, t);
+      if (c.uline.length) tl.fromTo(c.uline, { scaleX: 1 }, { scaleX: 0, transformOrigin: "100% 50%", duration: 0.16, ease: "power2.in", immediateRender: false }, t);
       if (c.kick && !keepKick) tl.to(c.kick, { opacity: 0, scale: 0.7, duration: 0.2, ease: "power2.in" }, t);
       if (c.kick && keepKick) tl.set(c.kick, { opacity: 0 }, t + 0.22);
       if (c.sub) tl.to(c.sub, { opacity: 0, y: -8, duration: 0.2, ease: "power2.in" }, t);
@@ -618,8 +629,8 @@
       tl.to(chip[to], { color: "#ffffff", duration: 0.15 }, t + 0.2);
       if (cnt[from] && cnt[to]) {
         // contador do cabeçalho troca com um "flash" azul
-        tl.to(cnt[from], { yPercent: -100, opacity: 0, duration: 0.2, ease: "power2.in" }, t + 0.05);
-        tl.fromTo(cnt[to], { yPercent: 100, opacity: 0, color: "#3364e0" }, { yPercent: 0, opacity: 1, color: "#3364e0", duration: 0.32, ease: "back.out(1.8)", immediateRender: false }, t + 0.12);
+        tl.fromTo(cnt[from], { yPercent: 0, opacity: 1 }, { yPercent: -100, opacity: 0, duration: 0.22, ease: "power2.inOut", immediateRender: false }, t + 0.05);
+        tl.fromTo(cnt[to], { yPercent: 100, opacity: 0, color: "#3364e0" }, { yPercent: 0, opacity: 1, color: "#3364e0", duration: 0.22, ease: "power2.inOut", immediateRender: false }, t + 0.05);
         tl.to(cnt[to], { color: "#6b6b6b", duration: 0.5 }, t + 1.0);
       }
       if (note) sfx("note", t + 0.05, { n: note, v: 1.1 });
@@ -758,7 +769,7 @@
       sfx("whoosh", t, { dur: 0.4, f0: 2000, f1: 700, v: 0.14, pan0: -0.3, pan1: 0.3, peak: 0.4 });
     };
     // digitação: tecla acende, dígito "salta" em azul e assenta em preto, cursor anda
-    const typeQty = (i, t0, gap, moveD) => {
+    const typeQty = (i, t0, gap, moveD, lastGap) => {
       const q = qps[i];
       const ds = $$(".qp-val .d", q);
       const caret = $(".qp-caret", q);
@@ -766,7 +777,7 @@
       keys.forEach((k, j) => {
         const t = t0 + j * gap;
         const kr = M.key[k];
-        tapAt(kr.x + kr.w / 2, kr.y + kr.h / 2, t, { move: j > 0, stay: true, moveD, light: true, v: 0.5 });
+        tapAt(kr.x + kr.w / 2, kr.y + kr.h / 2, t, { move: j > 0, stay: true, moveD, light: true, v: 0.5, gap: j < keys.length - 1 ? gap : lastGap });
         tl.to(keyEl[k], { backgroundColor: "#b9bcc4", duration: 0.04 }, t - 0.02);
         tl.to(keyEl[k], { backgroundColor: "#ffffff", duration: 0.16 }, t + 0.07);
         tl.fromTo(ds[j], { opacity: 0, y: 10, scale: 1.35, color: "#3364e0" }, { opacity: 1, y: 0, scale: 1, color: "#111111", duration: 0.24, ease: "back.out(2.5)", immediateRender: false }, t);
@@ -790,29 +801,27 @@
     const QTY_SHOT = shotFor({ x: 0, y: 40, w: 360, h: 722 }, { x: 40, y: 492, w: 1000, h: 1424 }, 2.6);
     const pickItem = (i, T0, full) => {
       const id = PICK[i];
-      tapAt(150, rowY(id), T0, { hold: 0.12, cut: T0 + K(0.25) });
+      tapAt(150, rowY(id), T0, full ? { label: "Toque aqui", light: true, hold: 0.12, cut: T0 + K(0.25) } : { hold: 0.12, cut: T0 + K(0.25) });
       tl.to(rows[id], { backgroundColor: "#f5f8ff", duration: 0.15 }, T0 + 0.02);
       pushIn(i, T0 + K(0.25));
       const add = M.qp[i].add;
       let tAdd;
       if (full) {
-        // 1º item completo: toca no campo, teclado sobe (a câmera desce junto), digita no ritmo
-        const f = M.qp[i].field;
-        tapAt(f.x + 60, f.y + f.h / 2, T0 + K(1.5), { light: true, cut: T0 + K(1.5) + 0.25 });
-        tl.to(kpad, { yPercent: 0, duration: 0.35, ease: "expo.out" }, T0 + K(1.5) + 0.05);
-        camTo(QTY_SHOT, T0 + K(1.5), 0.55, FOLLOW);
-        const tLast = typeQty(i, T0 + K(2.5), K(0.5), 0.14);
-        tAdd = T0 + K(4.5);
-        focusField(i, T0 + K(1.5) + 0.05, tAdd);
-        void tLast;
+        // 1º item, no ritmo de quem aprende: a tela abre com o campo em foco e o teclado sobe
+        // (a câmera desce junto); dígitos em colcheias
+        tl.to(kpad, { yPercent: 0, duration: 0.35, ease: "expo.out" }, T0 + K(1));
+        camTo(QTY_SHOT, T0 + K(1), 0.55, FOLLOW);
+        typeQty(i, T0 + K(2), K(0.5), 0.14, K(1));
+        tAdd = T0 + K(4);
+        focusField(i, T0 + K(1), tAdd);
       } else {
-        // próximos itens: campo já em foco e teclado aberto — dígitos em semicolcheias
+        // próximos itens: mesmo comportamento, mais rápido — dígitos em semicolcheias
         tl.to(kpad, { yPercent: 0, duration: 0.3, ease: "expo.out" }, T0 + K(0.5));
-        typeQty(i, T0 + K(1.25), K(0.25), 0.1);
+        typeQty(i, T0 + K(1.25), K(0.25), 0.07, K(0.5));
         tAdd = T0 + K(2.25);
         focusField(i, T0 + K(0.5), tAdd);
       }
-      tapAt(add.x + add.w * 0.72, add.y + add.h / 2, tAdd, { move: true, moveD: 0.25, light: true, cut: tAdd + 0.2, punch: 1.018 });
+      tapAt(add.x + add.w * 0.72, add.y + add.h / 2, tAdd, { move: true, moveD: full ? 0.25 : 0.2, light: true, cut: tAdd + 0.2, punch: 1.018 });
       // Adicionar → ✓ Adicionado (verde) antes de voltar para a lista
       const ab = $(".qp-add", qps[i]);
       tl.to(ab, { scale: 0.96, duration: 0.06, ease: "power2.in" }, tAdd - 0.03);
@@ -820,9 +829,9 @@
       tl.to($(".a0", ab), { yPercent: -100, opacity: 0, duration: 0.18, ease: "power2.in" }, tAdd + 0.05);
       tl.fromTo($(".a1", ab), { yPercent: 100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.22, ease: "back.out(2)", immediateRender: false }, tAdd + 0.1);
       tl.to(ab, { backgroundColor: "#30d158", duration: 0.15 }, tAdd + 0.08);
-      popOut(i, tAdd + K(0.5));
+      popOut(i, tAdd + (full ? K(0.75) : K(0.5)));
       // de volta à lista: item marcado (check desenhado) com a quantidade
-      const tBack = tAdd + K(1);
+      const tBack = tAdd + (full ? K(1.25) : K(1));
       tl.fromTo($(".radio .on", rows[id]), { scale: 0 }, { scale: 1, duration: 0.36, ease: "back.out(2.6)", immediateRender: false }, tBack);
       tl.fromTo($(".radio .on svg path", rows[id]), { strokeDashoffset: 11 }, { strokeDashoffset: 0, duration: 0.22, ease: "power2.out", immediateRender: false }, tBack + 0.08);
       tl.fromTo(rows[id], { backgroundColor: "#dfe8ff" }, { backgroundColor: "#f5f8ff", duration: 0.5, immediateRender: false }, tBack);
@@ -836,7 +845,7 @@
     tl.fromTo("#ins-ok", { scale: 1 }, { scale: 1.12, duration: 0.14, ease: "power2.out", immediateRender: false }, end0 - 0.2);
     tl.to("#ins-ok", { scale: 1, duration: 0.35, ease: "back.out(3)" }, end0 - 0.06);
     const c7 = caption({ kicker: "Passo 2", title: "Repita para|<em>os outros itens</em>", sub: "No fim, toque em <b>Concluir</b>." });
-    capSwap(c5, c7, end0);
+    capSwap(c5, c7, T.p1 + K(1));
     pickItem(1, T.p1, false);
     pickItem(2, T.p2, false);
     // Concluir (já no quadro)
@@ -864,9 +873,9 @@
     const TB = TC + 1.0;
     const odo = ["#cnt0", "#cnt-a", "#cnt-b", "#cnt1"];
     for (let j = 0; j < 3; j++) {
-      const tj = TB + 0.4 + j * 0.12;
-      tl.to(odo[j], { yPercent: -100, duration: 0.12, ease: "power2.in" }, tj);
-      tl.fromTo(odo[j + 1], { yPercent: 100 }, { yPercent: 0, duration: 0.16, ease: "back.out(2)", immediateRender: false }, tj);
+      const tj = TB + 0.4 + j * 0.17;
+      tl.fromTo(odo[j], { yPercent: 0 }, { yPercent: -100, duration: 0.14, ease: "power2.inOut", immediateRender: false }, tj);
+      tl.fromTo(odo[j + 1], { yPercent: 100 }, { yPercent: 0, duration: 0.14, ease: "power2.inOut", immediateRender: false }, tj);
       sfx("tick", tj, { f: 2200 + j * 300, v: 1.2 });
     }
     tl.to("#hint0", { opacity: 0, duration: 0.2 }, TB + 0.4);
@@ -879,7 +888,7 @@
     tl.to("#lote", { backgroundColor: "#eaeffc", color: "#3364e0", duration: 0.3 }, TB + 0.7);
     tl.to("#send", { backgroundColor: "#3364e0", duration: 0.3 }, TB + 0.7);
     tl.fromTo("#send .sheen", { xPercent: -150 }, { xPercent: 350, duration: 0.6, ease: "power2.inOut", immediateRender: false }, TB + 0.95);
-    callout("Já dá para <b>enviar</b>", M.send.x + M.send.w - 120, M.send.y - 40, TB + 0.75, 1.55, "blue", "100% 100%");
+    callout("Já dá para <b>enviar</b>", M.send.x + M.send.w - 120, M.send.y - 40, TB + 0.5, 1.7, "blue", "100% 100%");
 
     /* ====================================================================
        3 — SERVIÇO: NÃO É MAIS OBRIGATÓRIO. SEU LÍDER PODE APROPRIAR POR VOCÊ
@@ -969,14 +978,14 @@
     };
     const tF1 = E0 + K(3.75), tF2 = E0 + K(5.25), tF3 = E0 + K(6.75), tOk = E0 + K(7.75);
     // nível 1 → TORRE
-    tapAt(M.eapRow1.x + 40, M.eapRow1.y + M.eapRow1.h / 2, tF1, { hold: 0.2 });
+    tapAt(M.eapRow1.x + 40, M.eapRow1.y + M.eapRow1.h / 2, tF1, { cut: tF1 + 0.15 });
     tl.to(eap1[3], { backgroundColor: "#eaeffc", duration: 0.15 }, tF1);
     sfx("note", tF1, { n: 72, v: 0.9 });
     tl.to("#eap-l1", { xPercent: -100, duration: 0.45, ease: "power3.inOut" }, tF1 + 0.15);
     tl.to("#eap-l2", { xPercent: 0, duration: 0.45, ease: "power3.inOut" }, tF1 + 0.15);
     headSwap(head0, head1, tF1 + 0.15);
     // nível 2 → VEDAÇÕES
-    tapAt(M.eapRow2.x + 40, M.eapRow2.y + M.eapRow2.h / 2, tF2, { hold: 0.2 });
+    tapAt(M.eapRow2.x + 40, M.eapRow2.y + M.eapRow2.h / 2, tF2, { cut: tF2 + 0.15 });
     tl.to(eap2[3], { backgroundColor: "#eaeffc", duration: 0.15 }, tF2);
     sfx("note", tF2, { n: 76, v: 0.9 });
     tl.to("#eap-l2", { xPercent: -100, duration: 0.45, ease: "power3.inOut" }, tF2 + 0.15);
@@ -1015,8 +1024,8 @@
     const SEND_SHOT = focusOn({ x: 150, y: M.bbar.y - 120, w: 210, h: M.bbar.h + 120 }, 0, 2.7);
     stinger(SEND_SHOT, t4 - 0.05, { x: M.send.x + M.send.w / 2, y: M.send.y + M.send.h / 2 }, -1);
     spotTo({ x: M.lote.x, y: M.lote.y, w: M.send.x + M.send.w - M.lote.x, h: M.lote.h }, t4 + 0.8, { pad: 5, radius: 12 });
-    callout("<b>Ao lote:</b> junta com outras requisições<br><b>Enviar:</b> manda agora", M.send.x + M.send.w - 230, M.lote.y - 56, t4 + 0.9, 2.3, "", "100% 100%");
-    spotOff(t4 + 3.3, 0.3);
+    callout("<b>Ao lote:</b> junta com outras<br><b>Enviar:</b> manda agora", M.send.x + M.send.w - 200, M.lote.y - 56, t4 + 0.6, 2.85, "", "100% 100%");
+    spotOff(t4 + 3.5, 0.25);
     const tSend = T.send;
     drift(t4 + 0.9, tSend - t4 - 1.1, { x: M.send.x + M.send.w / 2, y: M.send.y + M.send.h / 2 }, 1.02);
     tapAt(M.send.x + M.send.w * 0.8, M.send.y + M.send.h / 2, tSend, { label: "Toque aqui", light: true, punch: 1.025 });
@@ -1048,7 +1057,7 @@
     tl.set(recap, { visibility: "visible", opacity: 1 }, t5 + 0.4);
     tl.fromTo(rcRows, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.2)", stagger: K(0.5), immediateRender: false }, t5 + 0.45);
     tl.fromTo($$(".rc-row > b", recap), { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(2.5)", stagger: K(0.5), immediateRender: false }, t5 + 0.55);
-    rcRows.forEach((r, i) => sfx("note", t5 + 0.55 + i * K(0.5), { n: [72, 76, 79, 84][i], v: 0.9 }));
+    rcRows.forEach((r, i) => sfx("note", t5 + 0.55 + i * K(0.5), { n: [84, 88, 91, 96][i], v: 1.2 }));
     // marca-texto nas duas ênfases (filtro por tipo e líder pode apropriar)
     tl.to($$(".rc-row span em", recap), { backgroundSize: "100% 38%", duration: 0.4, ease: "power2.out", stagger: 0.3 }, t5 + 0.55 + 4 * K(0.5));
     const tFoot = T.foot;

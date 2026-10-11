@@ -145,6 +145,10 @@ npm run render:tutorial:preview    # prévia 540×960 a 30 fps
   funcionalidade** — no app atual eles não existem (o cabeçalho real mostra "129 no estoque").
   **Só distribua o vídeo para as equipes depois que o filtro estiver no app**: quem seguir o tutorial
   em campo vai procurar os chips.
+- **A tela de quantidade foi desenhada a partir da descrição do fluxo, sem print**: um insumo por vez,
+  no mesmo modal (campo com unidade, "Em estoque", teclado numérico, botão "Adicionar" → "✓ Adicionado",
+  volta automática à lista com a quantidade). Também são suposições os botões −/+ nos itens do formulário
+  e o nível intermediário da EAP. Confira nome do botão e layout no app antes de distribuir.
 
 ## Licenças de terceiros
 

@@ -1,6 +1,6 @@
 # Áudio do tutorial
 
-O tutorial **funciona sem nenhum arquivo nesta pasta**: trilha calma e efeitos (toques, cliques,
+O tutorial **funciona sem nenhum arquivo nesta pasta**: trilha pop leve (108 BPM) e efeitos (toques, cliques,
 confirmações) são sintetizados em tempo real e sincronizados com cada animação. As legendas grandes
 no topo carregam todo o conteúdo, então o vídeo também funciona no mudo (como costuma ser visto no WhatsApp).
 
@@ -19,7 +19,7 @@ indicado e a trilha abaixa sozinha enquanto a voz fala (−7 dB, `duckMusicDb` e
 | `narracao-03.mp3` | Novidade: filtro por tipo de serviço. | 9,9 s | ~12,6 s | chips em foco |
 | `narracao-04.mp3` | Hidráulica? Só aparece hidráulica. | 12,7 s | ~14,9 s | lista filtrada com etiqueta Hidráulica |
 | `narracao-05.mp3` | E assim por diante. | 15,0 s | ~18,2 s | Elétrica → Alvenaria |
-| `narracao-06.mp3` | Toque no insumo e digite a quantidade. | 18,3 s | ~22,4 s | tela de quantidade · teclado · Adicionar |
+| `narracao-06.mp3` | Toque no insumo, digite a quantidade e toque em Adicionar. | 18,3 s | ~22,4 s | tela de quantidade · teclado · Adicionar |
 | `narracao-07.mp3` | Repita para os outros e toque em Concluir. | 22,5 s | ~27,6 s | 2º e 3º itens · Concluir |
 | `narracao-08.mp3` | Pronto: insumos no carrinho. | 27,7 s | ~31,0 s | itens no formulário · “Já dá para enviar” |
 | `narracao-09.mp3` | E o serviço? Não é mais obrigatório. | 31,1 s | ~35,1 s | Passo 3 · “Não é mais obrigatório” |
@@ -31,6 +31,8 @@ indicado e a trilha abaixa sozinha enquanto a voz fala (−7 dB, `duckMusicDb` e
 
 > As frases 03–05 apresentam o **filtro por tipo de serviço, que é uma proposta** (ainda não existe no
 > app). Grave e distribua essa versão só depois que o filtro estiver publicado.
+> A frase 06 cita o botão **Adicionar** da tela de quantidade, que foi desenhada a partir da descrição
+> do fluxo (sem print): confirme o nome do botão no app antes de gravar.
 
 Os tempos e textos ficam no array `NARR` de `tutorial/js/tutorial.js` e são calculados a partir do
 roteiro `T` (em batidas da trilha), então acompanham sozinhos qualquer ajuste de ritmo.

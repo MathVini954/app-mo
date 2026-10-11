@@ -121,7 +121,8 @@ window.ReelEngine = function (opts) {
     m.narration.forEach((n) => {
       if (n.kind !== "element" || n.cue <= 0.01) return;
       tl.call(() => {
-        if (player.state !== "playing") return;
+        // callbacks também disparam com o playhead voltando: só toca indo para frente
+        if (player.state !== "playing" || tl.totalTime() < n.cue - 0.01) return;
         n.el.currentTime = 0;
         n.el.muted = player.muted;
         n.el.play().catch(() => {});
@@ -133,6 +134,7 @@ window.ReelEngine = function (opts) {
     const p = player;
     ui.replay.classList.remove("is-on");
     stopElements();
+    p.state = "starting";
     seek(0);
     if (p.engine) {
       try { p.engine.out.disconnect(); } catch (e) { /* noop */ }
@@ -155,7 +157,7 @@ window.ReelEngine = function (opts) {
         media.music = null;
         plan.synthMusic = false;
       }
-      p.engine = new ShowreelAudio.Engine(p.ctx, { masterVolume: (CFG.audio && CFG.audio.masterVolume) || 0.9, inputGainDb: CFG.audio && CFG.audio.inputGainDb, destination: p.muteNode });
+      p.engine = new ShowreelAudio.Engine(p.ctx, { masterVolume: (CFG.audio && CFG.audio.masterVolume) || 0.9, inputGainDb: CFG.audio && CFG.audio.inputGainDb, softClipDb: CFG.audio && CFG.audio.softClipDb, destination: p.muteNode });
       p.t0 = p.ctx.currentTime + 0.12;
       p.engine.schedule(p.t0, plan, media);
       setTimeout(() => {

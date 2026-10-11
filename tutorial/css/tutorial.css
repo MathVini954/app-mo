@@ -320,19 +320,19 @@ body.hide-cursor * { cursor: none !important; }
   right: 0;
   bottom: 0;
   height: 96px;
-  padding: 12px 14px 22px;
+  padding: 12px 12px 22px;
   background: #fff;
   border-radius: 18px 18px 0 0;
   box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.06), 0 -1px 0 #f0f0f0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   z-index: 4;
 }
 .bb-info { flex: 1; min-width: 0; }
 .bb-count { font: 700 14.5px/1 var(--f-ui); color: #111; position: relative; height: 15px; overflow: hidden; }
 .bb-count span { position: absolute; left: 0; top: 0; white-space: nowrap; }
-.bb-hint { position: relative; margin-top: 5px; height: 12px; font: 400 11px/1 var(--f-ui); color: #6b6b6b; white-space: nowrap; overflow: hidden; }
+.bb-hint { position: relative; margin-top: 5px; height: 12px; font: 400 9.5px/1 var(--f-ui); color: #6b6b6b; white-space: nowrap; overflow: hidden; }
 .bb-hint span { position: absolute; left: 0; right: 0; top: 0; overflow: hidden; text-overflow: ellipsis; }
 .bb-hint #hint1 { opacity: 0; color: #138a3a; font-weight: 600; }
 .bb-states { position: relative; height: 19px; margin-top: 6px; }
@@ -342,12 +342,12 @@ body.hide-cursor * { cursor: none !important; }
 .bb-state i { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid #8a8a8a; }
 .bb-state.ok { background: #e3f8e9; color: #138a3a; }
 .bb-state.ok i { border-color: #138a3a; background: #138a3a; }
-.bb-cart { position: relative; width: 36px; height: 36px; border-radius: 10px; background: #f5f5f5; display: grid; place-items: center; flex: none; }
+.bb-cart { position: relative; width: 34px; height: 36px; border-radius: 10px; background: #f5f5f5; display: grid; place-items: center; flex: none; }
 .bb-cart svg { width: 18px; height: 18px; fill: #171717; }
 .bb-cart em { position: absolute; right: -5px; top: -5px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: var(--blue); color: #fff; font: 700 10px/17px var(--f-ui); font-style: normal; text-align: center; transform: scale(0); }
 .bb-lote, .bb-send { height: 36px; border-radius: 10px; display: grid; place-items: center; font: 600 12.5px/1 var(--f-ui); flex: none; }
-.bb-lote { width: 74px; background: #f5f8fe; color: #a7bcf2; }
-.bb-send { width: 86px; background: #b4c3ec; color: #fff; }
+.bb-lote { width: 66px; background: #f5f8fe; color: #a7bcf2; }
+.bb-send { width: 78px; background: #b4c3ec; color: #fff; }
 
 /* camada escura + folhas (bottom sheets) */
 .scrim { position: absolute; inset: 0; background: #000; opacity: 0; z-index: 5; pointer-events: none; }
@@ -468,7 +468,9 @@ body.hide-cursor * { cursor: none !important; }
   pointer-events: none;
 }
 .tap .core { position: absolute; inset: 8px; border-radius: 50%; background: rgba(17, 18, 20, 0.28); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9); }
-.tap .ring { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(51, 100, 224, 0.9); transform: scale(0.4); opacity: 0; }
+.tap .ring { display: none; }
+/* onda do toque: um elemento por toque, preso ao ponto tocado */
+.tap-ring { position: absolute; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; border: 2px solid rgba(51, 100, 224, 0.9); z-index: 20; pointer-events: none; }
 
 .tap-label {
   position: absolute;
@@ -670,7 +672,7 @@ body.hide-cursor * { cursor: none !important; }
 
 /* ---------- micro-movimentos (versão mais dinâmica) ---------- */
 .cap-kicker { position: relative; overflow: hidden; }
-.cap-kicker .shine { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%); transform: translateX(-120%); }
+.cap-kicker .shine { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%); } /* posição inicial via GSAP (xPercent) */
 .cap-sub { overflow: hidden; }
 .stp b { position: relative; }
 .stp-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--blue); opacity: 0; }
@@ -681,13 +683,13 @@ body.hide-cursor * { cursor: none !important; }
 .chip-hl { background: var(--blue); }
 /* Adicionar → ✓ Adicionado */
 .qp-add { position: relative; overflow: hidden; }
-.qp-add .a0, .qp-add .a1 { display: block; }
-.qp-add .a1 { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: grid; place-items: center; opacity: 0; }
+.qp-add .a0, .qp-add .a1 { position: absolute; inset: 0; display: grid; place-items: center; }
+.qp-add .a1 { opacity: 0; }
 .radio .on svg path { stroke-dasharray: 11; stroke-dashoffset: 0; }
 .qp-field .ring { box-shadow: 0 0 0 0 rgba(51, 100, 224, 0); }
 /* barra inferior: contador rolando e brilho no Enviar */
 .bb-send { position: relative; overflow: hidden; }
-.bb-send .sheen { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 100%); transform: translateX(-150%); }
+.bb-send .sheen { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 100%); } /* posição inicial via GSAP (xPercent) */
 .toast .ok svg path { stroke-dasharray: 14; stroke-dashoffset: 0; }
 /* resumo: marca-texto nas duas ênfases */
 .rc-row span em { background: linear-gradient(#dbe5ff, #dbe5ff) no-repeat 0 88% / 0% 38%; }

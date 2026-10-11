@@ -16,6 +16,7 @@ window.SHOWREEL_CONFIG = {
     synthMusic: true,
     sfx: true,
     inputGainDb: 6,                  // ganho antes do compressor/limitador (≈ −16 LUFS, padrão de vídeo social)
+    softClipDb: -2.3,                // teto suave de pico (margem para a recompressão do WhatsApp)
     masterVolume: 0.9
   }
 };

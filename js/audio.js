@@ -80,7 +80,18 @@ window.ShowreelAudio = (function () {
     this.input.connect(this.comp);
     this.comp.connect(this.limiter);
     this.limiter.connect(this.out);
-    this.out.connect(this.opts.destination || ctx.destination);
+    if (this.opts.softClipDb != null) {
+      // teto suave (waveshaper 4x): segura os picos sem o ganho automático do compressor
+      var clip = ctx.createWaveShaper(), N = 4096, cv = new Float32Array(N), C = dbToGain(this.opts.softClipDb), K0 = 0.6;
+      for (var ci = 0; ci < N; ci++) {
+        var xx = ci / (N - 1) * 2 - 1, ax = Math.abs(xx);
+        cv[ci] = (xx < 0 ? -1 : 1) * (ax <= K0 ? ax : K0 + (C - K0) * Math.tanh((ax - K0) / (C - K0)));
+      }
+      clip.curve = cv; clip.oversample = "4x";
+      this.out.connect(clip); clip.connect(this.opts.destination || ctx.destination);
+    } else {
+      this.out.connect(this.opts.destination || ctx.destination);
+    }
 
     // reverb
     this.reverb = ctx.createConvolver();
@@ -683,11 +694,11 @@ window.ShowreelAudio = (function () {
           var lastBeat = k1 - kk <= pullback + 1e-6, inStop = kk - k0 < stopGap - 1e-6;
           if (sec.lvl === "fin" || inStop) continue;
           // arpejo
-          if (L.arp && st % L.arp === 0) {
+          if (L.arp && st % L.arp === 0 && !near(tt)) {
             var e = Math.round(st / 2), note = ch.pad[(e * 2 + (e >> 2)) % ch.pad.length] + 12;
             self.synth = pump; self.pluck(tt, note, L.arpV, e % 2 ? 0.25 : -0.25); self.synth = bus;
           }
-          if (L.pick && pos === 15 && !lastBeat) { self.synth = pump; self.pluck(tt, ch.hi[3], L.arpV * 0.7, 0.3); self.synth = bus; }
+          if (L.pick && pos === 15 && !lastBeat && !near(tt)) { self.synth = pump; self.pluck(tt, ch.hi[3], L.arpV * 0.7, 0.3); self.synth = bus; }
           if (sec.lvl === "intro") continue;
           if (L.kick && !lastBeat) L.kick.forEach(function (kq) { if (kq[0] === pos) { self.pkick(tt, kq[1]); kicks.push(tt); } });
           if (L.clap && (pos === 4 || pos === 12)) self.clap(tt, near(tt) ? L.clap * 0.35 : L.clap);
@@ -912,7 +923,7 @@ window.ShowreelAudio = (function () {
     var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     var ctx = new OAC(2, Math.ceil(plan.duration * sampleRate), sampleRate);
     return loadMedia(ctx, cfg).then(function (media) {
-      var eng = new Engine(ctx, { masterVolume: (cfg.audio && cfg.audio.masterVolume) || 0.9, inputGainDb: cfg.audio && cfg.audio.inputGainDb });
+      var eng = new Engine(ctx, { masterVolume: (cfg.audio && cfg.audio.masterVolume) || 0.9, inputGainDb: cfg.audio && cfg.audio.inputGainDb, softClipDb: cfg.audio && cfg.audio.softClipDb });
       eng.schedule(0, plan, media);
       return ctx.startRendering().then(function (buf) {
         return {
