@@ -150,7 +150,8 @@ body.hide-cursor * { cursor: none !important; }
 .cap-sub { position: relative; }
 .cap-sub .s0, .cap-sub .s1 { display: block; }
 .cap-sub .s1 { position: absolute; left: 0; top: 0; }
-.line-mask { display: block; overflow: hidden; padding-bottom: 0.14em; margin-bottom: -0.14em; }
+.line-mask { display: block; overflow: hidden; padding: 0.1em 0.14em 0.14em; margin: -0.1em -0.14em -0.14em; }
+.line-mask .w { display: inline-block; vertical-align: top; }
 .cap-title em.ul { position: relative; }
 .uline { position: absolute; left: 0; right: 0; bottom: -0.07em; height: 7px; border-radius: 4px; background: var(--blue); transform: scaleX(0); transform-origin: 0 50%; }
 .line-mask > span { display: inline-block; }
@@ -211,16 +212,17 @@ body.hide-cursor * { cursor: none !important; }
   background: #000;
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 16px 0 13px;
   gap: 14px;
   color: #fff;
   z-index: 3;
 }
 .app-head svg { width: 20px; height: 20px; fill: #fff; flex: none; }
-.logo { display: flex; flex-direction: column; align-items: center; line-height: 1; margin-left: 2px; }
-.logo svg { width: 36px; height: 9px; fill: none; stroke: #fff; stroke-width: 2.4; margin-bottom: 1px; }
-.logo span { font: 500 14px/1 var(--f-ui); letter-spacing: -0.02em; }
-.head-title { font: 500 12px/1 var(--f-ui); color: #2c2c2c; margin-left: 8px; }
+/* logo Rio Ave redesenhada em vetor a partir do print do app (arco + letreiro, i sem pingo) */
+.logo { display: flex; align-items: center; margin-left: -2px; }
+.app-head .logo svg.rio-logo { width: 40.5px; height: 20.7px; fill: #fff; }
+.head-title { font: 500 12px/1 var(--f-ui); color: #2c2c2c; margin-left: 0; }
+.app-head > svg, .head-right svg { fill: #cfcfcf; } /* ícones do cabeçalho real são cinza-claro */
 .head-right { margin-left: auto; display: flex; gap: 18px; }
 
 /* conteúdo do formulário */
@@ -665,3 +667,27 @@ body.hide-cursor * { cursor: none !important; }
 .render #start,
 .render #controls,
 .render #replay { display: none !important; }
+
+/* ---------- micro-movimentos (versão mais dinâmica) ---------- */
+.cap-kicker { position: relative; overflow: hidden; }
+.cap-kicker .shine { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%); transform: translateX(-120%); }
+.cap-sub { overflow: hidden; }
+.stp b { position: relative; }
+.stp-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--blue); opacity: 0; }
+/* filtro: pílula azul que desliza entre os chips */
+.chip { position: relative; z-index: 1; background: transparent !important; }
+.chip-bg, .chip-hl { position: absolute; border-radius: 15px; z-index: 0; }
+.chip-bg { background: #f2f3f5; }
+.chip-hl { background: var(--blue); }
+/* Adicionar → ✓ Adicionado */
+.qp-add { position: relative; overflow: hidden; }
+.qp-add .a0, .qp-add .a1 { display: block; }
+.qp-add .a1 { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: grid; place-items: center; opacity: 0; }
+.radio .on svg path { stroke-dasharray: 11; stroke-dashoffset: 0; }
+.qp-field .ring { box-shadow: 0 0 0 0 rgba(51, 100, 224, 0); }
+/* barra inferior: contador rolando e brilho no Enviar */
+.bb-send { position: relative; overflow: hidden; }
+.bb-send .sheen { position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(100deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 100%); transform: translateX(-150%); }
+.toast .ok svg path { stroke-dasharray: 14; stroke-dashoffset: 0; }
+/* resumo: marca-texto nas duas ênfases */
+.rc-row span em { background: linear-gradient(#dbe5ff, #dbe5ff) no-repeat 0 88% / 0% 38%; }

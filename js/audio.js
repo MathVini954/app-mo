@@ -584,13 +584,165 @@ window.ShowreelAudio = (function () {
     });
   };
 
+  /* ---------- TRILHA "VIVA" (tutoriais): grade fixa, seções, sem sub-grave ---------- */
+  // instrumentos "de celular": energia acima de ~100 Hz (o alto-falante do telefone reproduz)
+  E.pkick = function (t, vel) {
+    var c = this.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(210, t);
+    o.frequency.exponentialRampToValueAtTime(95, t + 0.06);
+    o.frequency.exponentialRampToValueAtTime(70, t + 0.2);
+    this.env(g.gain, t, 0.002, 0.8 * vel, 0.2);
+    o.connect(g); g.connect(this.drums); o.start(t); o.stop(t + 0.26);
+    var k = c.createOscillator(), kg = c.createGain();   // "knock" 300→160 Hz: o soco que o celular toca
+    k.type = "triangle";
+    k.frequency.setValueAtTime(320, t);
+    k.frequency.exponentialRampToValueAtTime(160, t + 0.04);
+    this.env(kg.gain, t, 0.001, 0.32 * vel, 0.05);
+    k.connect(kg); kg.connect(this.drums); k.start(t); k.stop(t + 0.08);
+    var n = this.noiseSrc(t, 0.02), hp = this.filter("highpass", 2500), ng = c.createGain();
+    this.env(ng.gain, t, 0.001, 0.14 * vel, 0.015);
+    n.connect(hp); hp.connect(ng); ng.connect(this.drums);
+  };
+  E.pbass = function (t, note, dur, vel) {
+    var c = this.ctx, f = midi(note), g = c.createGain(), lp = this.filter("lowpass", 1500, 3);
+    var o1 = c.createOscillator(), o2 = c.createOscillator();
+    o1.type = "sawtooth"; o1.frequency.value = f;
+    o2.type = "square"; o2.frequency.value = f * 2; o2.detune.value = 4;
+    var g2 = c.createGain(); g2.gain.value = 0.22;
+    lp.frequency.setValueAtTime(1700 * vel + 300, t);
+    lp.frequency.exponentialRampToValueAtTime(380, t + Math.max(0.08, dur * 0.8));
+    this.env(g.gain, t, 0.004, 0.24 * vel, dur * 0.6, 0.12 * vel, 0.04, t + dur * 0.9);
+    o1.connect(lp); o2.connect(g2); g2.connect(lp); lp.connect(g); g.connect(this.synth);
+    o1.start(t); o2.start(t); o1.stop(t + dur + 0.08); o2.stop(t + dur + 0.08);
+  };
+  // nota afinada para a interface (sfx): fica no tom da trilha
+  E.note = function (t, o) {
+    var c = this.ctx, n = (o && o.n) || 79, v = (o && o.v) || 1;
+    var g = c.createGain(), lp = this.filter("lowpass", 4200, 1);
+    lp.frequency.setValueAtTime(4200, t);
+    lp.frequency.exponentialRampToValueAtTime(900, t + 0.25);
+    this.env(g.gain, t, 0.002, 0.075 * v, 0.32);
+    for (var h = 0; h < 2; h++) {
+      var os = c.createOscillator(), og = c.createGain();
+      os.type = h ? "sine" : "triangle"; os.frequency.value = midi(n) * (h + 1);
+      og.gain.value = h ? 0.3 : 1;
+      os.connect(og); og.connect(lp); os.start(t); os.stop(t + 0.4);
+    }
+    var p = this.pan((o && o.pan) || 0);
+    lp.connect(g); g.connect(p); p.connect(this.sfx); this.send(g, 0.3);
+  };
+
+  E.scheduleUpbeatMusic = function (t0, m, cues) {
+    var self = this, c = this.ctx;
+    var beat = 60 / (m.bpm || 108), s16 = beat / 4;
+    var G = t0 + (m.grid || 0);
+    var at = function (k) { return G + k * beat; };
+    var endK = ((m.end - (m.grid || 0)) / beat);
+    // 1) só a música passa por um passa-altas: grave inaudível no celular deixa de "gastar" o limitador
+    var hp = this.filter("highpass", m.hp || 95, 0.7);
+    this.musicLP.disconnect(); this.musicLP.connect(hp); hp.connect(this.duck);
+    // 2) "pump": pads e arpejo respiram com o bumbo (sidechain desenhado na timeline)
+    var pump = c.createGain(); pump.connect(this.music);
+    var bus = this.synth;
+    var V = {
+      C: { pad: [55, 60, 62, 64, 67], bass: 48, hi: [72, 76, 79, 83] },
+      G: { pad: [55, 59, 62, 64, 67], bass: 43, hi: [71, 74, 79, 83] },
+      Am: { pad: [57, 60, 64, 67, 71], bass: 45, hi: [72, 76, 79, 84] },
+      F: { pad: [53, 57, 60, 64, 67], bass: 41, hi: [72, 76, 77, 81] }
+    };
+    var PROG = ["C", "G", "Am", "F"];
+    var LVL = {
+      intro: { pad: 0.06, cut: 1100, arp: 4, arpV: 0.028 },
+      lite: { pad: 0.07, cut: 1500, arp: 2, arpV: 0.04, kick: [[0, 0.6], [8, 0.5]], clap: 0.3, hat: [0.08, 0, 0.2, 0], bass: [[0, 6, 0.55], [6, 6, 0.45], [12, 4, 0.45]], hr: 8 },
+      full: { pad: 0.07, cut: 1900, arp: 2, arpV: 0.042, kick: [[0, 0.75], [6, 0.38], [8, 0.65]], clap: 0.42, hat: [0.1, 0.045, 0.22, 0.055], open: 0.12, bass: [[0, 2, 0.6], [2, 2, 0.45], [6, 2, 0.45], [10, 2, 0.45], [14, 2, 0.5]], hr: 4, pick: true },
+      brk: { pad: 0.075, cut: 950, arp: 4, arpV: 0.032, kick: [[0, 0.42]], clap8: 0.26, hat: [0, 0, 0.09, 0], hr: 8 },
+      fin: { pad: 0.08, cut: 1700 }
+    };
+    // cliques da interface: palma recua quando cai junto (o toque é que manda)
+    var ui = (cues || []).filter(function (q) { return /click|tick|blip|note/.test(q.type); }).map(function (q) { return t0 + q.t; });
+    var near = function (t) { for (var i = 0; i < ui.length; i++) if (Math.abs(ui[i] - t) < 0.04) return true; return false; };
+    var kicks = [];
+    var secs = m.sections;
+    var chordIdx = 0;
+    secs.forEach(function (sec, si) {
+      var k0 = sec.k, k1 = si + 1 < secs.length ? secs[si + 1].k : endK;
+      var L = LVL[sec.lvl];
+      if (sec.chord != null) chordIdx = PROG.indexOf(sec.chord);
+      var nBeats = k1 - k0;
+      var hr = sec.lvl === "fin" || sec.lvl === "intro" ? nBeats : L.hr; // batidas por acorde
+      var pullback = secs[si + 1] && secs[si + 1].hit === "drop" ? 1 : 0; // respiro antes do drop
+      var stopGap = sec.hit === "stop" ? 2 : 0; // "parada": 2 batidas só com pad
+      for (var kc = 0; kc < nBeats - 1e-6; kc += hr, chordIdx++) {
+        var ch = sec.lvl === "fin" ? { pad: [55, 60, 64, 67, 71, 74], bass: 48, hi: [79, 84, 88] } : V[PROG[chordIdx % 4]];
+        var len = Math.min(hr, nBeats - kc) * beat;
+        self.synth = pump; self.pad(at(k0 + kc), ch.pad, len + (sec.lvl === "fin" ? 1.2 : 0), L.pad, L.cut); self.synth = bus;
+        // passo de 16 avos dentro do acorde
+        for (var st = 0; st < Math.round(Math.min(hr, nBeats - kc) * 4); st++) {
+          var kk = k0 + kc + st / 4, pos = Math.round((kc * 4 + st)) % 16, tt = at(kk);
+          var lastBeat = k1 - kk <= pullback + 1e-6, inStop = kk - k0 < stopGap - 1e-6;
+          if (sec.lvl === "fin" || inStop) continue;
+          // arpejo
+          if (L.arp && st % L.arp === 0) {
+            var e = Math.round(st / 2), note = ch.pad[(e * 2 + (e >> 2)) % ch.pad.length] + 12;
+            self.synth = pump; self.pluck(tt, note, L.arpV, e % 2 ? 0.25 : -0.25); self.synth = bus;
+          }
+          if (L.pick && pos === 15 && !lastBeat) { self.synth = pump; self.pluck(tt, ch.hi[3], L.arpV * 0.7, 0.3); self.synth = bus; }
+          if (sec.lvl === "intro") continue;
+          if (L.kick && !lastBeat) L.kick.forEach(function (kq) { if (kq[0] === pos) { self.pkick(tt, kq[1]); kicks.push(tt); } });
+          if (L.clap && (pos === 4 || pos === 12)) self.clap(tt, near(tt) ? L.clap * 0.35 : L.clap);
+          if (L.clap8 && pos === 8) self.clap(tt, near(tt) ? L.clap8 * 0.35 : L.clap8);
+          if (L.hat) {
+            var hv = L.hat[pos % 4];
+            if (L.open && pos === 14) self.hat(tt, L.open, true);
+            else if (hv) self.hat(tt, hv, false);
+          }
+          if (L.bass && !lastBeat) L.bass.forEach(function (bq) { if (bq[0] === pos) self.pbass(tt, ch.bass + (pos === 14 && (kc / hr) % 2 ? 7 : 0), bq[1] * s16 * 0.9, bq[2]); });
+        }
+      }
+      // marcas de seção
+      var tk = at(k0);
+      if (sec.hit === "drop") {
+        self.riser(tk - 2 * beat, { dur: 2 * beat, v: 0.55 });
+        for (var r = 0; r < 4; r++) self.clap(tk - beat + r * s16, 0.1 + r * 0.07);
+        self.crash(tk, { v: 0.6 });
+        self.pkick(tk, 0.9); kicks.push(tk);
+        self.stab(tk, V[PROG[PROG.indexOf(sec.chord || "C")]].hi, 0.1, 3200);
+      }
+      if (sec.hit === "stop") {
+        self.crash(tk, { v: 0.5 });
+        self.stab(tk, [69, 72, 76, 79], 0.11, 3000);
+        self.riser(tk - beat, { dur: beat, v: 0.35 });
+      }
+      if (sec.hit === "fin") {
+        self.pkick(tk, 0.45);
+        [79, 84, 88].forEach(function (nn, j) { self.pluck(tk + j * s16 * 2, nn, 0.05, j === 1 ? 0 : (j ? 0.3 : -0.3)); });
+      }
+    });
+    // sidechain: pad/arpejo cedem ~4 dB em cada bumbo
+    kicks.sort(function (a, b) { return a - b; });
+    pump.gain.setValueAtTime(1, t0);
+    kicks.forEach(function (tk) {
+      pump.gain.setValueAtTime(1, tk);
+      pump.gain.linearRampToValueAtTime(0.6, tk + 0.012);
+      pump.gain.setTargetAtTime(1, tk + 0.03, 0.085);
+    });
+    // brilhos nos momentos-chave, na grade de 16 avos
+    (m.accents || []).forEach(function (a) {
+      [76, 79, 83, 88].forEach(function (nn, j) { self.pluck(t0 + a + j * s16, nn, 0.05, j % 2 ? 0.3 : -0.3); });
+    });
+    // fechamento suave no fim
+    this.musicLP.frequency.setValueAtTime(18000, t0 + m.end - 1.2);
+    this.musicLP.frequency.exponentialRampToValueAtTime(2500, t0 + m.end);
+  };
+
   /* ---------- agendamento completo ---------- */
   E.schedule = function (t0, plan, media) {
     var ctx = this.ctx, self = this;
     media = media || {};
 
     if (plan.sfxOn !== false) {
-      if (!plan.music || plan.music.style !== "calm") this.room(t0, plan.music && plan.music.intro ? plan.music.intro + 0.4 : 2.1);
+      if (!plan.music || (plan.music.style !== "calm" && plan.music.style !== "upbeat")) this.room(t0, plan.music && plan.music.intro ? plan.music.intro + 0.4 : 2.1);
       plan.cues.forEach(function (c) {
         var fn = self[c.type];
         if (typeof fn === "function") fn.call(self, t0 + c.t, c);
@@ -605,7 +757,8 @@ window.ShowreelAudio = (function () {
       ms.connect(mg); mg.connect(this.music);
       ms.start(t0);
     } else if (plan.synthMusic !== false) {
-      if (plan.music && plan.music.style === "calm") this.scheduleCalmMusic(t0, plan.music);
+      if (plan.music && plan.music.style === "upbeat") this.scheduleUpbeatMusic(t0, plan.music, plan.cues);
+      else if (plan.music && plan.music.style === "calm") this.scheduleCalmMusic(t0, plan.music);
       else this.scheduleMusic(t0, plan.music);
     }
 

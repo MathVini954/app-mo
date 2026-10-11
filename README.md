@@ -109,18 +109,21 @@ tutorial/               tutorial vertical "Nova requisição" (index.html, css/,
 
 ## Tutorial — Nova requisição (Rio Ave)
 
-Vídeo vertical de **57 s (1080×1920, 9:16)**, pensado para WhatsApp/celular, que ensina a fazer uma
+Vídeo vertical de **58,6 s (1080×1920, 9:16)**, pensado para WhatsApp/celular, que ensina a fazer uma
 requisição de material no app Rio Ave. Fica em `tutorial/` e reaproveita o motor de áudio e a exportação.
+O roteiro está na grade da trilha (108 BPM): toques, legendas e viradas de capítulo caem na batida.
 
 ```
 00.0  ABERTURA ........... "Como fazer uma requisição" + "4 passos — e o serviço agora é opcional" (capa do WhatsApp)
-03.7  PASSO 1 ............ Quem retira (já vem preenchido)
-08.3  PASSO 2 ............ Insumos · NOVO filtro por tipo de serviço: Hidráulica → só hidráulica (etiqueta em
-                           cada item, lista rola até tubos e registros) → Elétrica → Alvenaria · marcar · quantidade
-27.0  PASSO 3 ............ "Não é mais obrigatório" (~4 s) → "Seu líder pode apropriar por você" (cartão
+03.3  PASSO 1 ............ Quem retira (já vem preenchido)
+07.2  PASSO 2 ............ Insumos · NOVO filtro por tipo de serviço: Hidráulica → só hidráulica (etiqueta em
+                           cada item, lista rola até tubos e registros) → Elétrica → Alvenaria
+17.8                       Toque no insumo → tela de quantidade no mesmo modal (teclado, Adicionar) → volta
+                           marcado com a quantidade; repete para os outros → Concluir → itens no carrinho
+30.6  PASSO 3 ............ "Não é mais obrigatório" (~4,4 s) → "Seu líder pode apropriar por você" (cartão
                            Serviço: Obrigatório → Opcional · Você envia → Seu líder pode apropriar depois) → EAP opcional
-43.6  PASSO 4 ............ Enviar agora ou juntar no lote → toque em Enviar → "Requisição enviada"
-50.6  RESUMO ............. os 4 passos + "Dúvidas? Fale com o seu líder." (termina no resumo, sem tela preta)
+46.1  PASSO 4 ............ Enviar agora ou juntar no lote → toque em Enviar → "Requisição enviada"
+52.8  RESUMO ............. os 4 passos + "Dúvidas? Fale com o seu líder." (termina no resumo, sem tela preta)
 ```
 
 ```bash
@@ -132,8 +135,9 @@ npm run render:tutorial:preview    # prévia 540×960 a 30 fps
 
 - Legendas grandes no topo: o vídeo funciona **no mudo**. A narração é opcional e nunca simulada
   (veja `tutorial/audio/README.md` com as frases e os tempos).
-- Áudio mixado para alto-falante de celular (sem sub-grave) e normalizado perto de −16 LUFS
-  (`inputGainDb` em `tutorial/js/config.js`).
+- Trilha sintetizada "viva" (108 BPM, seções com drops e uma parada no passo 3), mixada para alto-falante
+  de celular (sem sub-grave) e perto de −16 LUFS (`inputGainDb` em `tutorial/js/config.js`).
+- A logo Rio Ave do cabeçalho foi redesenhada em vetor a partir do print do app (arco + letreiro).
 - `tutorial/index.html?t=31.5` congela num instante (Espaço continua dali, sem som); `tutorial/js/tutorial.js`
   concentra roteiro, dados fictícios dos insumos/EAP e a timeline.
 - O app é redesenhado em HTML/CSS a partir dos prints (não são imagens). **Os chips de filtro por

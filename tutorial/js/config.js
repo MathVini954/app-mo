@@ -15,7 +15,7 @@ window.SHOWREEL_CONFIG = {
     music: { src: "audio/trilha.mp3", volume: 0.7 },
     synthMusic: true,
     sfx: true,
-    inputGainDb: 7,                  // ganho antes do compressor/limitador (≈ −16 LUFS, padrão de vídeo social)
+    inputGainDb: 6,                  // ganho antes do compressor/limitador (≈ −16 LUFS, padrão de vídeo social)
     masterVolume: 0.9
   }
 };

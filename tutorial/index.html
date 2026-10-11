@@ -29,7 +29,7 @@
           <div class="sb"><span>9:41</span><i class="isl"></i><span><svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg viewBox="0 0 27 13"><rect x="0.5" y="0.5" width="23" height="12" rx="3.5" fill="none" stroke="#fff" stroke-opacity=".5"/><rect x="2.5" y="2.5" width="17" height="8" rx="2"/></svg></span></div>
           <div class="app-head">
             <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-            <div class="logo"><svg viewBox="0 0 36 9"><path d="M2 8.5C8 1 28 1 34 8.5"/></svg><span>Rio Ave</span></div>
+            <div class="logo"><svg class="rio-logo" viewBox="60.2 27.6 37.1 19" aria-label="Rio Ave"><path fill-rule="evenodd" d="M68.19 37.47A15.69 13.08 27.26 0 1 96.76 37.47ZM76.24 37.47A10.44 24.01 8 0 1 91.59 37.47Z"/><path d="M60.53 46.06H61.62V42.75H63.47C63.53 42.75 63.6 42.75 63.67 42.74L65.44 46.06H66.71L64.79 42.54C65.87 42.17 66.37 41.29 66.37 40.15C66.37 38.63 65.46 37.51 63.46 37.51H60.53ZM61.62 41.78V38.47H63.4C64.76 38.47 65.29 39.14 65.29 40.15C65.29 41.16 64.76 41.78 63.41 41.78ZM67.84 46.06H68.88V39.65H67.84ZM73.08 46.2C74.83 46.2 76.01 44.87 76.01 42.89C76.01 40.89 74.83 39.57 73.08 39.57C71.34 39.57 70.16 40.89 70.16 42.89C70.16 44.87 71.34 46.2 73.08 46.2ZM73.08 45.28C71.8 45.28 71.21 44.16 71.21 42.89C71.21 41.62 71.8 40.49 73.08 40.49C74.38 40.49 74.97 41.62 74.97 42.89C74.97 44.16 74.38 45.28 73.08 45.28ZM78.11 46.06H79.27L80.1 43.68H83.62L84.47 46.06H85.62L82.48 37.51H81.22ZM80.43 42.72 81.03 40.99C81.22 40.46 81.48 39.65 81.84 38.38C82.2 39.62 82.45 40.42 82.66 40.99L83.28 42.72ZM87.51 46.06H88.59L91.04 39.65H89.91L88.55 43.45C88.35 44.01 88.2 44.57 88.06 45.1C87.91 44.57 87.76 44.01 87.56 43.45L86.19 39.65H85.06ZM94.29 46.2C95.61 46.2 96.56 45.54 96.86 44.57L95.86 44.3C95.62 44.95 95.05 45.28 94.3 45.28C93.16 45.28 92.38 44.55 92.33 43.2H96.97V42.77C96.97 40.4 95.53 39.57 94.17 39.57C92.42 39.57 91.28 40.94 91.28 42.91C91.28 44.88 92.43 46.2 94.29 46.2ZM92.33 42.33C92.4 41.35 93.07 40.48 94.17 40.48C95.23 40.48 95.82 41.24 95.92 42.33Z"/></svg></div>
             <div class="head-title">Nova requisição</div>
             <div class="head-right">
               <svg viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.1-1.6-5.6-4.5-6.3V4a1.5 1.5 0 0 0-3 0v.7C7.6 5.4 6 7.9 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
@@ -70,13 +70,13 @@
 
           <div class="bbar" id="bbar">
             <div class="bb-info">
-              <div class="bb-count"><span id="cnt0">0 itens</span><span id="cnt1">3 itens</span></div>
+              <div class="bb-count"><span id="cnt0">0 itens</span><span id="cnt-a">1 item</span><span id="cnt-b">2 itens</span><span id="cnt1">3 itens</span></div>
               <div class="bb-hint"><span id="hint0">Adicione pelo menos 1 insumo</span><span id="hint1">Pronto para enviar</span></div>
               <div class="bb-states"><div class="bb-state" id="st0"><i></i>Incompleto</div><div class="bb-state ok" id="st1"><i></i>Completo</div></div>
             </div>
             <div class="bb-cart"><svg viewBox="0 0 24 24"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM5.2 4H2V2h4.6l.9 2H21l-3.6 7.4a2 2 0 0 1-1.8 1.1H8.1l-1 1.8V15h12v2H6a2 2 0 0 1-1.7-3l1.4-2.5z"/></svg><em id="cart-n">3</em></div>
             <div class="bb-lote" id="lote">Ao lote</div>
-            <div class="bb-send" id="send">Enviar</div>
+            <div class="bb-send" id="send">Enviar<i class="sheen"></i></div>
           </div>
 
           <div class="scrim" id="scrim"></div>
@@ -166,7 +166,7 @@
 
   <!-- Tela inicial (contorna bloqueio de autoplay de áudio) -->
   <div id="start" role="button" tabindex="0" aria-label="Toque para iniciar">
-    <div class="st-top">TUTORIAL — NOVA REQUISIÇÃO <span id="st-dur">00:57</span></div>
+    <div class="st-top">TUTORIAL — NOVA REQUISIÇÃO <span id="st-dur">00:59</span></div>
     <div class="st-center">TOQUE PARA INICIAR<i class="st-caret"></i></div>
     <div class="st-status">
       <span id="st-narr">NARRAÇÃO — verificando…</span>
