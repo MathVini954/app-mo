@@ -11,7 +11,9 @@
     "render:preview": "node tools/render.mjs --fps 30 --scale 0.5 --out dist/preview.mp4",
     "render:tutorial": "node tools/render.mjs --page tutorial/index.html",
     "render:tutorial:preview": "node tools/render.mjs --page tutorial/index.html --fps 30 --scale 0.5 --out dist/tutorial-preview.mp4",
-    "render:tutorial:whatsapp": "node tools/render.mjs --page tutorial/index.html --fps 30 --crf 21 --abr 128k --maxrate 3M --out dist/tutorial-requisicao-whatsapp.mp4"
+    "render:tutorial:whatsapp": "node tools/render.mjs --page tutorial/index.html --fps 30 --crf 21 --abr 128k --maxrate 3M --out dist/tutorial-requisicao-whatsapp.mp4",
+    "render:promo": "node tools/render.mjs --page promo/index.html",
+    "render:promo:whatsapp": "node tools/render.mjs --page promo/index.html --fps 30 --crf 21 --abr 128k --maxrate 3M --out dist/controleng-motion-whatsapp.mp4"
   },
   "devDependencies": {
     "playwright": "1.56.1"
