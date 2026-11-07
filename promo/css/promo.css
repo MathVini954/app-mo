@@ -375,3 +375,17 @@ body.hide-cursor, body.hide-cursor * { cursor: none !important; }
 .stp { position: relative; }
 .stp div span { position: relative; height: 15px; }
 .stp div span em { position: absolute; left: 0; top: 0; font-style: normal; white-space: nowrap; }
+
+/* recomendações inteligentes (ilustrativo) */
+.rec { position: absolute; left: 10px; right: 10px; bottom: 100px; z-index: 9; padding: 14px; border-radius: 22px; background: #fff; box-shadow: 0 -10px 30px rgba(31, 69, 214, 0.18), 0 0 0 1.5px rgba(91, 61, 245, 0.35); }
+.rec-h { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.rec-ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #5b3df5, #35c2b6); color: #fff; font: 700 17px/1 var(--f-ui); }
+.rec-h b { display: block; font: 800 15px/1.1 var(--f-ui); background: linear-gradient(90deg, #5b3df5, #1f45d6 60%, #0f7f78); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.rec-h small { display: block; margin-top: 3px; font: 400 11px/1 var(--f-ui); color: #6e6e76; }
+.rec-c { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 14px; background: #f4f3ff; box-shadow: inset 0 0 0 1.5px transparent; }
+.rec-c + .rec-c { margin-top: 8px; }
+.rec-c div { flex: 1; min-width: 0; }
+.rec-c b { display: block; font: 700 13.5px/1.2 var(--f-ui); }
+.rec-c span { display: block; margin-top: 3px; font: 400 10.5px/1.2 var(--f-ui); color: #6e6e76; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-c em { font-style: normal; padding: 7px 12px; border-radius: 14px; background: #5b3df5; color: #fff; font: 700 11.5px/1 var(--f-ui); }
+.day small { transition: none; }

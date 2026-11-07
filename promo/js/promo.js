@@ -9,15 +9,15 @@
   const CFG = window.SHOWREEL_CONFIG;
   const W = 1080, H = 1920;
   const BPM = 108, BEAT = 60 / BPM, K = (b) => b * BEAT;
-  const DURATION = K(54); // 30,0 s
-  const B = { home: 5, apr: 11, dia: 26, prz: 37, ai: 42, end: 49.5 };
+  const DURATION = K(68); // ≈ 37,8 s
+  const B = { home: 5, apr: 11, smart: 18, trad: 27, dia: 41, prz: 51, ai: 56, end: 63.5 };
 
   ReelEngine({
     width: W,
     height: H,
     duration: DURATION,
     name: "controleng-motion",
-    posterTime: K(B.apr + 8),
+    posterTime: K(B.smart + 4.5),
     config: CFG,
     fonts: ['400 20px "Inter"', '500 20px "Inter"', '600 20px "Inter"', '700 20px "Inter"', '800 60px "Inter"'],
     audioPlan: () => ({
@@ -28,6 +28,8 @@
           { k: 0, lvl: "intro" },
           { k: B.home, lvl: "lite", hit: "drop", chord: "C" },
           { k: B.apr, lvl: "full", hit: "drop", chord: "C" },
+          { k: B.smart, lvl: "full", hit: "drop", chord: "Am" },
+          { k: B.trad, lvl: "lite", hit: "drop", chord: "F" },
           { k: B.dia, lvl: "full", hit: "drop", chord: "Am" },
           { k: B.prz, lvl: "full", hit: "drop", chord: "F" },
           { k: B.ai, lvl: "brk", hit: "stop", chord: "Am" },
@@ -130,7 +132,7 @@
     const pages = { home: $("#pg-home"), apr: $("#pg-apr"), dia: $("#pg-dia"), clima: $("#pg-clima"), prz: $("#pg-prazo") };
     const show = (k) => Object.entries(pages).forEach(([n, p]) => (p.style.visibility = n === k ? "visible" : "hidden"));
     show("apr");
-    const MA = { rep: R($("#rep")), add: R($("#abadd")), send: R(send), quem: R($(".quem")), bar: R($("#aprbar")) };
+    const MA = { rep: R($("#rep")), add: R($("#abadd")), send: R(send), quem: R($(".quem")), bar: R($("#aprbar")), edit: R($(".edit")), quando: R($(".quando")), rec: R($("#rec")), rec1: R($("#rec1")), days: dayEls.map((d) => R(d)) };
     show("home");
     const MH = { adv: R($(".adv")), grid: R($(".grid2")), rio: R($("#riobtn")) };
     const MN = {};
@@ -300,32 +302,129 @@
     sfx("note", T1 + 1.2, { n: 79, v: 1.0 });
 
     /* ====================================================================
-       2 — APROPRIAÇÃO: equipe → TORRE A › ESTRUTURA › FÔRMA › APLICAÇÃO DE FÔRMA
+       2 — APROPRIAÇÃO: três jeitos
        ==================================================================== */
+    const worker = $("#worker");
+    const s0 = $(".s0", send), s1 = $(".s1", send);
+    gsap.set(worker, { opacity: 0, scale: 0.85 });
+    gsap.set("#aprbar", { yPercent: 120 });
+    gsap.set(s1, { opacity: 0 });
+    gsap.set(".ab-l .f1", { opacity: 0 });
+    const rec = $("#rec");
+    gsap.set(rec, { yPercent: 140, opacity: 0 });
+    const BAR_SHOT = focus({ x: 0, y: MA.bar.y - 240, w: 390, h: MA.bar.h + 240 }, 1.75, 1300);
+    const FORM_SHOT = focus({ x: 0, y: MA.quando.y - 10, w: 390, h: MA.quem.y + MA.quem.h - MA.quando.y + 20 }, 1.75, 1240);
+    // dia selecionado (vermelho), como no app
+    let curDay = 6;
+    const selDay = (i, t) => {
+      tapAt(MA.days[i], t, { punch: 1.02 });
+      tl.to(dayEls[curDay], { backgroundColor: curDay === 1 ? "#d5e3d6" : "#f2f2f5", color: "#111216", duration: 0.15 }, t + 0.02);
+      tl.to($("small", dayEls[curDay]), { color: "#666666", duration: 0.15 }, t + 0.02);
+      tl.to(dayEls[i], { backgroundColor: "#d81b60", color: "#ffffff", duration: 0.15 }, t + 0.02);
+      tl.to($("small", dayEls[i]), { color: "#ffffff", duration: 0.15 }, t + 0.02);
+      tl.fromTo(dayEls[i], { scale: 1 }, { keyframes: { scale: [1, 1.15, 1] }, duration: 0.35, ease: "power2.out", immediateRender: false }, t + 0.02);
+      curDay = i;
+    };
+    const workerIn = (t) => {
+      tl.fromTo(worker, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.45, ease: "elastic.out(1, 0.6)", immediateRender: false }, t);
+      tl.to([".sel .n0", ".multi .n0"], { opacity: 0, duration: 0.1 }, t);
+      tl.to([".sel .n1", ".multi .n1"], { opacity: 1, duration: 0.15 }, t + 0.04);
+      sfx("note", t, { n: 76, v: 1.0 });
+    };
+    const ready = (t) => {
+      tl.to(".ab-l .f0", { opacity: 0, duration: 0.1 }, t);
+      tl.fromTo(".ab-l .f1", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2.5)", immediateRender: false }, t + 0.05);
+      tl.to(send, { backgroundColor: "#1f45d6", color: "#ffffff", duration: 0.2 }, t + 0.1);
+      tl.fromTo(send, { scale: 1 }, { keyframes: { scale: [1, 1.12, 1] }, duration: 0.35, ease: "power2.out", immediateRender: false }, t + 0.1);
+    };
+    const doSend = (t) => {
+      tapAt(MA.send, t, { punch: 1.03 });
+      tl.fromTo(s0, { yPercent: 0, opacity: 1 }, { yPercent: -100, opacity: 0, duration: 0.15, ease: "power2.in", immediateRender: false }, t + 0.04);
+      tl.fromTo(s1, { yPercent: 100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.25, ease: "back.out(2.5)", immediateRender: false }, t + 0.1);
+      tl.to(send, { backgroundColor: "#16a34a", duration: 0.15 }, t + 0.06);
+      sparks(MA.send.x + MA.send.w / 2, MA.send.y + MA.send.h / 2, t + 0.06, 16);
+      impact(t + 0.05, 0.55);
+      sfx("note", t + 0.08, { n: 79, v: 1.1 });
+      sfx("note", t + 0.22, { n: 84, v: 1.1 });
+    };
+    // nova apropriação: limpa o formulário
+    const resetForm = (t) => {
+      tl.to("#aprbar", { yPercent: 120, duration: 0.3, ease: "power3.in" }, t);
+      tl.to(worker, { opacity: 0, scale: 0.85, duration: 0.2 }, t);
+      tl.to([".sel .n1", ".multi .n1"], { opacity: 0, duration: 0.1 }, t);
+      tl.to([".sel .n0", ".multi .n0"], { opacity: 1, duration: 0.1 }, t + 0.1);
+      tl.set(".ab-l .f1", { opacity: 0 }, t + 0.32);
+      tl.set(".ab-l .f0", { opacity: 1 }, t + 0.32);
+      tl.set(s1, { yPercent: 100, opacity: 0 }, t + 0.32);
+      tl.set(s0, { yPercent: 0, opacity: 1 }, t + 0.32);
+      tl.set(send, { backgroundColor: "#e2e3ea", color: "#5f6474" }, t + 0.32);
+    };
+
+    // ---- jeito 1: repetir o dia anterior → já fica pronta ----
     const T2 = K(B.apr);
-    const h2 = head({ kicker: "Apropriação", title: "Mão de obra|<em>lançada em segundos.</em>", sub: "Equipe, horas e serviço direto da obra." });
+    const h2 = head({ kicker: "Apropriação · 1", title: "Repetir o dia anterior.|<em>Pronto.</em>", sub: "Equipe e serviço de ontem num toque só." });
     swap(h1, h2, T2);
     impact(T2, 1);
     swing(T2, -1);
     camTo(BASE, T2 - 0.45, 0.45);
     navTap("apr", T2 - 0.1);
     dayEls.forEach((d, i) => tl.fromTo($("i", d), { "--p": "0%" }, { "--p": DAYS[i][2] + "%", duration: 0.45, ease: "expo.out", immediateRender: false }, T2 + 0.4 + i * 0.04));
-    const worker = $("#worker");
-    gsap.set(worker, { opacity: 0, scale: 0.85 });
-    gsap.set("#aprbar", { yPercent: 120 });
-    const tRep = T2 + K(2.5);
-    camTo(focus({ x: 0, y: MA.rep.y - 10, w: 390, h: MA.quem.y + MA.quem.h - MA.rep.y + 20 }, 1.8, 1240), T2 + K(1), 0.55);
-    tapAt(MA.rep, tRep, { punch: 1.025 });
-    tl.fromTo(worker, { opacity: 0, scale: 0.85 }, { opacity: 1, scale: 1, duration: 0.45, ease: "elastic.out(1, 0.6)", immediateRender: false }, tRep + 0.1);
-    tl.to(".sel .n0", { opacity: 0, duration: 0.12 }, tRep + 0.12);
-    tl.to(".sel .n1", { opacity: 1, duration: 0.15 }, tRep + 0.15);
-    tl.to(".multi .n0", { opacity: 0, duration: 0.12 }, tRep + 0.12);
-    tl.to(".multi .n1", { opacity: 1, duration: 0.15 }, tRep + 0.15);
-    tl.to("#aprbar", { yPercent: 0, duration: 0.45, ease: "expo.out" }, tRep + 0.25);
-    sfx("note", tRep + 0.12, { n: 76, v: 1.0 });
-    // serviço: desce a árvore da EAP
-    const tAdd = T2 + K(4.5);
-    camTo(focus({ x: 0, y: MA.bar.y - 240, w: 390, h: MA.bar.h + 240 }, 1.75, 1300), T2 + K(3.5), 0.45);
+    camTo(focus({ x: 0, y: MA.rep.y - 10, w: 390, h: MA.quem.y + MA.quem.h - MA.rep.y + 20 }, 1.8, 1240), T2 + K(1), 0.5);
+    const tRep = T2 + K(2);
+    tapAt(MA.rep, tRep, { punch: 1.03 });
+    tl.to($("svg", $("#rep")), { rotation: -360, duration: 0.6, ease: "power3.inOut", transformOrigin: "50% 50%" }, tRep);
+    workerIn(tRep + 0.12);
+    tl.to("#aprbar", { yPercent: 0, duration: 0.45, ease: "expo.out" }, tRep + 0.3);
+    ready(tRep + 0.45);
+    sparks(MA.rep.x + MA.rep.w / 2, MA.rep.y + MA.rep.h / 2, tRep + 0.05, 12);
+    camTo(BAR_SHOT, tRep + 0.7, 0.5);
+    doSend(T2 + K(4.75));
+
+    // ---- jeito 2: dia + funcionário → recomendações inteligentes ----
+    const TS = K(B.smart);
+    const h2b = head({ kicker: "Apropriação · 2", kcls: "ai", title: "Recomendações|<em>inteligentes.</em>", sub: "Escolha o dia e a pessoa: o app sugere o serviço." });
+    swap(h2, h2b, TS);
+    impact(TS, 0.9);
+    swing(TS, 1);
+    resetForm(TS - 0.35);
+    camTo(FORM_SHOT, TS - 0.2, 0.55);
+    selDay(5, TS + K(1));
+    tapAt(MA.edit, TS + K(2.5), { fx: 0.25, punch: 1.02 });
+    workerIn(TS + K(2.5) + 0.12);
+    // painel de recomendações sobe com brilho
+    const tRec = TS + K(3.5);
+    camTo(focus({ x: 0, y: MA.rec.y - 30, w: 390, h: MA.rec.h + 60 }, 1.85, 1250), tRec - 0.1, 0.55);
+    tl.fromTo(rec, { yPercent: 140, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.55, ease: "expo.out", immediateRender: false }, tRec);
+    tl.fromTo($(".rec-ic", rec), { rotation: -180, scale: 0 }, { rotation: 0, scale: 1, duration: 0.6, ease: "back.out(2.5)", immediateRender: false }, tRec + 0.15);
+    tl.fromTo($$(".rec-c", rec), { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out", stagger: 0.1, immediateRender: false }, tRec + 0.25);
+    sparks(MA.rec.x + 32, MA.rec.y + 30, tRec + 0.2, 12);
+    sfx("riser", tRec - 0.4, { dur: 0.4, v: 0.4 });
+    sfx("note", tRec + 0.2, { n: 88, v: 1.0 });
+    sfx("note", tRec + 0.33, { n: 91, v: 1.0 });
+    const tUse = TS + K(5.75);
+    tapAt(MA.rec1, tUse, { fx: 0.88, punch: 1.03 });
+    tl.to("#rec1", { backgroundColor: "#e9e4ff", boxShadow: "inset 0 0 0 2px #5b3df5", duration: 0.12 }, tUse);
+    sparks(MA.rec1.x + MA.rec1.w * 0.88, MA.rec1.y + MA.rec1.h / 2, tUse + 0.04, 14);
+    tl.to(rec, { yPercent: 140, opacity: 0, duration: 0.35, ease: "power3.in" }, tUse + 0.35);
+    tl.to("#aprbar", { yPercent: 0, duration: 0.45, ease: "expo.out" }, tUse + 0.55);
+    ready(tUse + 0.7);
+    camTo(BAR_SHOT, tUse + 0.45, 0.5);
+    doSend(TS + K(8));
+
+    // ---- jeito 3: tradicional — dia, funcionário e serviço na EAP ----
+    const T2c = K(B.trad);
+    const h2c = head({ kicker: "Apropriação · 3", title: "Ou do jeito|<em>tradicional.</em>", sub: "Dia, pessoa e serviço direto na EAP." });
+    swap(h2b, h2c, T2c);
+    impact(T2c, 0.9);
+    swing(T2c, -1);
+    resetForm(T2c - 0.35);
+    camTo(FORM_SHOT, T2c - 0.2, 0.55);
+    selDay(4, T2c + K(1));
+    tapAt(MA.edit, T2c + K(2.25), { fx: 0.25, punch: 1.02 });
+    workerIn(T2c + K(2.25) + 0.12);
+    tl.to("#aprbar", { yPercent: 0, duration: 0.45, ease: "expo.out" }, T2c + K(2.75));
+    camTo(BAR_SHOT, T2c + K(2.75), 0.45);
+    const tAdd = T2c + K(4);
     tapAt(MA.add, tAdd, { punch: 1.025 });
     gsap.set("#sheet", { yPercent: 105 });
     lists.forEach((l, i) => gsap.set(l, { xPercent: i ? 100 : 0 }));
@@ -345,11 +444,10 @@
       tl.to(heads[li + 1], { opacity: 1, x: 0, duration: 0.25, ease: "power3.out" }, t + 0.26);
       sfx("note", t, { n: note, v: 0.9 });
     };
-    const tL1 = T2 + K(6), tL2 = T2 + K(7.25), tL3 = T2 + K(8.5), tLeaf = T2 + K(9.75), tOk = T2 + K(11);
+    const tL1 = T2c + K(5.5), tL2 = T2c + K(6.75), tL3 = T2c + K(8), tLeaf = T2c + K(9.25), tOk = T2c + K(10.5);
     drill(0, MS.torre, tL1, 72);
     drill(1, MS.estr, tL2, 76);
     drill(2, MS.forma, tL3, 79);
-    // folha: APLICAÇÃO DE FÔRMA marcada
     tapAt(MS.aplic, tLeaf, { fx: 0.35, punch: 1.02 });
     const ck = $(".ck", rowOf(3, 0));
     tl.to(rowOf(3, 0), { backgroundColor: "#e8eefc", duration: 0.12 }, tLeaf);
@@ -362,27 +460,16 @@
     tapAt(MS.concl, tOk, { punch: 1.025 });
     tl.to("#sheet", { yPercent: 105, duration: 0.4, ease: "power4.in" }, tOk + 0.1);
     tl.to("#scrim", { opacity: 0, duration: 0.25 }, tOk + 0.2);
-    tl.to(".ab-l .f0", { opacity: 0, duration: 0.1 }, tOk + 0.4);
-    tl.fromTo(".ab-l .f1", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2.5)", immediateRender: false }, tOk + 0.45);
-    tl.to(send, { backgroundColor: "#1f45d6", color: "#ffffff", duration: 0.2 }, tOk + 0.5);
-    camTo(focus({ x: 0, y: MA.bar.y - 240, w: 390, h: MA.bar.h + 240 }, 1.75, 1300), tOk + 0.2, 0.5);
-    const tSend = T2 + K(14);
-    tapAt(MA.send, tSend, { punch: 1.03 });
-    tl.to($(".s0", send), { yPercent: -100, opacity: 0, duration: 0.15, ease: "power2.in" }, tSend + 0.04);
-    gsap.set($(".s1", send), { opacity: 0 });
-    tl.fromTo($(".s1", send), { yPercent: 100, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.25, ease: "back.out(2.5)", immediateRender: false }, tSend + 0.1);
-    tl.to(send, { backgroundColor: "#16a34a", duration: 0.15 }, tSend + 0.06);
-    sparks(MA.send.x + MA.send.w / 2, MA.send.y + MA.send.h / 2, tSend + 0.06, 16);
-    impact(tSend + 0.05, 0.6);
-    sfx("note", tSend + 0.08, { n: 79, v: 1.1 });
-    sfx("note", tSend + 0.22, { n: 84, v: 1.1 });
+    ready(tOk + 0.4);
+    camTo(BAR_SHOT, tOk + 0.2, 0.5);
+    doSend(T2c + K(12.75));
 
     /* ====================================================================
        3 — DIÁRIO DE OBRA: clima e expediente
        ==================================================================== */
     const T3 = K(B.dia);
     const h3 = head({ kicker: "Diário de obra", title: "O RDO do dia|<em>em poucos toques.</em>", sub: "Clima, início e fim do expediente." });
-    swap(h2, h3, T3);
+    swap(h2c, h3, T3);
     impact(T3, 0.8);
     swing(T3, 1);
     camTo(BASE, T3 - 0.45, 0.45);
